@@ -1,38 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import EditorUI from './components/EditorUI';
 import Canvas3D from './components/Canvas3D';
 import DrawingCanvas from './components/DrawingCanvas';
 
-export default function App() {
-  const [productType, setProductType] = useState('backpack');
-  const [colors, setColors] = useState({
+// Estado inicial centralizado para facilitar el reseteo
+const initialState = {
+  productType: 'backpack',
+  colors: {
     body: '#ffffff',
     adjustmentStraps: '#969696',
     loadStraps: '#333333',
-    sidePockets: '#666666',
-  });
-  const [texture, setTexture] = useState('none');
-  const [customText, setCustomText] = useState({
+    sidePockets: '#cccccc',
+  },
+  texture: 'none',
+  customText: {
     content: 'OEMN',
     color: '#000000',
-    font: 'Formula1-Bold',
+    font: 'Ailerons',
     size: 1,
     positionX: 0,
     positionY: 0.35,
-    positionZ: 0.36, 
-  });
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [drawingTexture, setDrawingTexture] = useState(null);
+    positionZ: 0.36,
+  },
+  drawingTexture: null,
+};
 
+function App() {
+  const [productType, setProductType] = useState(initialState.productType);
+  const [colors, setColors] = useState(initialState.colors);
+  const [texture, setTexture] = useState(initialState.texture);
+  const [customText, setCustomText] = useState(initialState.customText);
+  const [drawingTexture, setDrawingTexture] = useState(initialState.drawingTexture);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const handleApplyDrawing = (dataUrl) => {
+    setDrawingTexture(dataUrl);
+    setTexture('custom'); // Activa la textura de dibujo
+    setIsDrawing(false);
+  };
+  
+  // Función para resetear todo al estado inicial
+  const handleReset = useCallback(() => {
+    setProductType(initialState.productType);
+    setColors(initialState.colors);
+    setTexture(initialState.texture);
+    setCustomText(initialState.customText);
+    setDrawingTexture(initialState.drawingTexture);
+  }, []);
+
+  // Función para guardar el diseño (ahora más simple)
   const handleSave = async () => {
     const designData = {
       productType,
       colors,
       texture,
       customText,
-      drawingDataUrl: texture === 'custom' ? drawingTexture : null,
+      drawingTexture,
     };
-
     try {
       const response = await fetch('http://localhost:5001/api/designs', {
         method: 'POST',
@@ -45,32 +69,26 @@ export default function App() {
       alert('¡Tu diseño ha sido guardado con éxito!');
     } catch (error) {
       console.error('Error al guardar el diseño:', error);
-      alert('Hubo un problema al guardar tu diseño.');
+      alert('Hubo un problema al guardar tu diseño. Por favor, inténtalo de nuevo.');
     }
-  };
-  
-  const handleApplyDrawing = (dataUrl) => {
-    setDrawingTexture(dataUrl);
-    setTexture('custom');
-    setIsDrawing(false);
   };
 
   return (
     <div className="w-screen h-screen bg-gray-100 flex font-sans">
+      {isDrawing && <DrawingCanvas onClose={() => setIsDrawing(false)} onApply={handleApplyDrawing} />}
+      
       <EditorUI
-        productType={productType}
-        setProductType={setProductType}
-        colors={colors}
-        setColors={setColors}
-        texture={texture}
-        setTexture={setTexture}
-        customText={customText}
-        setCustomText={setCustomText}
+        productType={productType} setProductType={setProductType}
+        colors={colors} setColors={setColors}
+        texture={texture} setTexture={setTexture}
+        customText={customText} setCustomText={setCustomText}
         onSave={handleSave}
         onOpenDrawing={() => setIsDrawing(true)}
+        onReset={handleReset}
       />
-      <div className="flex-1 h-full relative">
-        <Canvas3D 
+
+      <div className="flex-grow h-full">
+        <Canvas3D
           productType={productType}
           colors={colors}
           texture={texture}
@@ -78,13 +96,9 @@ export default function App() {
           drawingTexture={drawingTexture}
         />
       </div>
-       {isDrawing && (
-        <DrawingCanvas 
-          onClose={() => setIsDrawing(false)}
-          onApply={handleApplyDrawing}
-        />
-      )}
     </div>
   );
 }
+
+export default App;
 

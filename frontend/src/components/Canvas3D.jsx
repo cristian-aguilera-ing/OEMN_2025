@@ -1,8 +1,9 @@
-import React, { Suspense, useMemo, useEffect } from 'react';
+import React, { Suspense, useMemo, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, useGLTF, Text, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
+// Tu lista de fuentes
 const fontUrls = {
     'Ailerons': '/fonts/Ailerons.woff', 'Aqua': '/fonts/Aqua.woff', 'CraftyHoliday': '/fonts/CraftyHoliday.woff', 
     'Formula1-Bold': '/fonts/Formula1-Bold.woff', 'Formula1-Italic': '/fonts/Formula1-Italic.woff',
@@ -14,70 +15,46 @@ const fontUrls = {
     'parley-regular': '/fonts/parley-regular.woff',
 };
 
-const applyTextureProperties = (textures) => {
-    for (const key in textures) {
-        const tex = textures[key];
-        if (tex) {
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(3, 3);
-            tex.flipY = false;
-            tex.needsUpdate = true;
-        }
-    }
+const PbrMaterial = ({ path }) => {
+    const pbrTextures = useTexture({ map: `${path}/color.jpg`, normalMap: `${path}/normal.jpg`, roughnessMap: `${path}/roughness.jpg` });
+    useEffect(() => { Object.values(pbrTextures).forEach(tex => { if (tex) { tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(3, 3); tex.flipY = false; tex.needsUpdate = true; } }); }, [pbrTextures]);
+    return <meshStandardMaterial {...pbrTextures} roughness={1.0} metalness={0.0} />;
 };
 
-const PbrMaterial = ({ path }) => {
-    const pbrTextures = useTexture({
-        map: `${path}/color.jpg`,
-        normalMap: `${path}/normal.jpg`,
-        roughnessMap: `${path}/roughness.jpg`,
-    });
+// Componente de material simplificado
+const BodyMaterial = ({ texture, color, drawingTexture }) => {
+    const [drawingTex, setDrawingTex] = useState(null);
 
     useEffect(() => {
-        applyTextureProperties(pbrTextures);
-    }, [pbrTextures]);
-
-    return <meshStandardMaterial {...pbrTextures} roughness={0.85} metalness={0.1} />;
-};
-
-const BodyMaterial = ({ textureId, color, drawingTexture }) => {
-    const userDrawingTexture = useMemo(() => {
-        if (!drawingTexture) return null;
-        return new THREE.TextureLoader().load(drawingTexture, tex => {
-            tex.flipY = false;
-            tex.needsUpdate = true;
-        });
+        if (drawingTexture) {
+            new THREE.TextureLoader().load(drawingTexture, t => { t.flipY = false; t.needsUpdate = true; setDrawingTex(t); });
+        } else {
+            setDrawingTex(null);
+        }
     }, [drawingTexture]);
-
-    if (textureId === 'custom' && userDrawingTexture) {
-        return <meshStandardMaterial map={userDrawingTexture} roughness={0.8} />;
-    }
     
-    const [category, variant] = (textureId || 'none').split('-');
-
-    if (category === 'leather') {
+    // Lógica de prioridad simplificada
+    if (texture === 'custom' && drawingTex) {
+        return <meshStandardMaterial map={drawingTex} roughness={0.8} />;
+    } else if (texture.startsWith('leather-')) {
+        const [, variant] = texture.split('-');
         return <PbrMaterial path={`/textures/leather/${variant}`} />;
-    }
-    if (category === 'canvas') {
+    } else if (texture === 'canvas') {
         return <PbrMaterial path="/textures/canvas" />;
+    } else if (texture.startsWith('geometric-')) {
+        const [, variant] = texture.split('-');
+        return <PbrMaterial path={`/textures/geometric/${variant || 'v1'}`} />;
+    } else {
+        return <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />;
     }
-    // Lógica actualizada para manejar variantes geométricas
-    if (category === 'geometric') {
-        // Si no hay variante (caso inicial), usa v1 por defecto.
-        const geometricVariant = variant || 'v1';
-        return <PbrMaterial path={`/textures/geometric/${geometricVariant}`} />;
-    }
-
-    // Fallback for 'none' (Liso) and any other case
-    return <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />;
 };
 
-const Backpack = ({ colors, texture, customText, drawingTexture }) => {
+const Backpack = (props) => {
     const { nodes, materials } = useGLTF('/mochila_dior.glb');
     
-    const adjustmentStrapsMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: colors.adjustmentStraps }), [colors.adjustmentStraps]);
-    const loadStrapsMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: colors.loadStraps }), [colors.loadStraps]);
-    const sidePocketsMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: colors.sidePockets }), [colors.sidePockets]);
+    const adjustmentStrapsMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.adjustmentStraps }), [props.colors.adjustmentStraps]);
+    const loadStrapsMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.loadStraps }), [props.colors.loadStraps]);
+    const sidePocketsMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.sidePockets }), [props.colors.sidePockets]);
 
     return (
         <group scale={1.5} position-y={-1.0}>
@@ -86,41 +63,33 @@ const Backpack = ({ colors, texture, customText, drawingTexture }) => {
                 let materialToRender;
                 switch (node.name) {
                     case 'Pattern':
-                        return (
-                            <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow>
-                                <BodyMaterial textureId={texture} color={colors.body} drawingTexture={drawingTexture} />
-                            </mesh>
-                        );
+                        return ( <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow> <BodyMaterial {...props} color={props.colors.body}/> </mesh> );
                     case 'Fabic1': materialToRender = adjustmentStrapsMaterial; break;
                     case 'Fabic2': materialToRender = loadStrapsMaterial; break;
                     case 'Net_Side': materialToRender = sidePocketsMaterial; break;
                     default: 
-                        materialToRender = materials[node.material.name]; 
-                        break;
+                        materialToRender = materials[node.material.name]; break;
                 }
                 return <mesh key={node.uuid} geometry={node.geometry} material={materialToRender} castShadow receiveShadow />;
             })}
 
             <Suspense fallback={null}>
                 <Text
-                    font={fontUrls[customText.font]}
-                    position={[customText.positionX, customText.positionY, customText.positionZ]}
+                    font={fontUrls[props.customText.font]}
+                    position={[props.customText.positionX, props.customText.positionY, props.customText.positionZ]}
                     rotation={[0, 0, 0]}
-                    fontSize={customText.size * 0.08}
-                    color={customText.color}
-                    anchorX="center"
-                    anchorY="middle"
-                    maxWidth={0.8}
-                    textAlign="center"
+                    fontSize={props.customText.size * 0.08}
+                    color={props.customText.color}
+                    anchorX="center" anchorY="middle" maxWidth={0.8} textAlign="center"
                 >
-                    {customText.content}
+                    {props.customText.content}
                 </Text>
             </Suspense>
         </group>
     );
 };
 
-
+// Componentes placeholder restaurados
 const Bag = (props) => (
   <group position-y={-0.75} {...props}>
     <mesh castShadow receiveShadow>
@@ -147,9 +116,8 @@ const MateBag = (props) => (
 );
 
 
-export default function Canvas3D({ productType, colors, texture, customText, drawingTexture }) {
+export default function Canvas3D({ productType, ...props}) {
     const renderProduct = () => {
-        const props = { colors, texture, customText, drawingTexture };
         switch(productType) {
             case 'backpack': return <Backpack {...props} />;
             case 'bag': return <Bag {...props} />;
@@ -160,8 +128,8 @@ export default function Canvas3D({ productType, colors, texture, customText, dra
     return (
         <Canvas shadows dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 5] }}>
             <Suspense fallback={null}>
-                <Stage environment="city" intensity={0.5} adjustCamera preset="rembrandt">
-                    {renderProduct()}
+                <Stage environment="city" intensity={0.4} adjustCamera preset="rembrandt">
+                   {renderProduct()}
                 </Stage>
             </Suspense>
             <OrbitControls makeDefault autoRotate={false} minPolarAngle={0} maxPolarAngle={Math.PI / 1.5} />
