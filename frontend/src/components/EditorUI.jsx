@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 // Sub-componente para secciones colapsables, mejorando la UX
 const Section = ({ title, children, defaultOpen = false }) => {
@@ -25,58 +25,70 @@ export default function EditorUI({
   texture, setTexture,
   customText, setCustomText,
   onSave, onOpenDrawing,
+  onImageUpload, imageTransform, setImageTransform, hasCustomImage,
   onReset
 }) {
+  const fileInputRef = useRef(null);
+
   const productOptions = ['backpack', 'bag', 'mateBag'];
-  const textureOptions = [
+
+  const baseTextureOptions = [
     { id: 'none', name: 'Liso' },
     { id: 'canvas', name: 'Tela' },
     { id: 'leather', name: 'Cuero' },
     { id: 'geometric', name: 'Tela Geométrica' },
   ];
   
-  // Definimos las variantes para cada tipo de material
-  const canvasVariants = [ { id: 'canvas-v1', name: 'V1' }, { id: 'canvas-v2', name: 'V2' }, { id: 'canvas-v3', name: 'V3' } ];
+  // Añadimos dinámicamente la opción "Tu Imagen" si existe una imagen cargada
+  const textureOptions = hasCustomImage
+    ? [...baseTextureOptions, { id: 'customImage', name: 'Tu Imagen' }]
+    : baseTextureOptions;
+
+  const canvasVariants = [ { id: 'canvas-v1', name: 'V1' }, { id: 'canvas-v2', name: 'V2' }, { id: 'canvas-v3', name: 'V3' }, { id: 'canvas-v4', name: 'V4' } ];
   const leatherVariants = [ { id: 'leather-brown', name: 'Marrón' }, { id: 'leather-black', name: 'Negro' }, { id: 'leather-white', name: 'Blanco' } ];
   const geometricVariants = [ { id: 'geometric-v1', name: 'V1' }, { id: 'geometric-v2', name: 'V2' }, { id: 'geometric-v3', name: 'V3' } ];
   
-  // Tu lista de fuentes
   const fontOptions = [ 'Ailerons', 'Aqua', 'CraftyHoliday', 'Formula1-Bold', 'Formula1-Italic', 'Hyped', 'Jelle-Roman', 'koliko-Bold', 'koliko-Light', 'koliko-Regular', 'Lombok-Regular', 'Lottebytes', 'Love', 'Modeka', 'Neutro-ExtraBold', 'Neutro-Outline', 'Nordic-Alternative-egular', 'parley-bold', 'parley-regular'];
 
   const handleColorChange = (part, value) => setColors(prev => ({ ...prev, [part]: value }));
   const handleTextChange = (field, value) => setCustomText(prev => ({ ...prev, [field]: value }));
 
   const handleTextureSelection = (id) => {
-    // Si se hace clic en un botón principal de material con variantes, se selecciona la primera por defecto
-    if (id === 'leather' && !texture.startsWith('leather-')) {
-      setTexture('leather-brown');
-    } else if (id === 'geometric' && !texture.startsWith('geometric-')) {
-      setTexture('geometric-v1');
-    } else if (id === 'canvas' && !texture.startsWith('canvas-')) {
-      setTexture('canvas-v1');
-    } else {
-      setTexture(id);
+    if (id === 'leather' && !texture.startsWith('leather-')) setTexture('leather-brown');
+    else if (id === 'geometric' && !texture.startsWith('geometric-')) setTexture('geometric-v1');
+    else if (id === 'canvas' && !texture.startsWith('canvas-')) setTexture('canvas-v1');
+    else setTexture(id);
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => onImageUpload(event.target.result);
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleTransformChange = (field, value) => {
+    setImageTransform({
+      ...imageTransform,
+      [field]: parseFloat(value)
+    });
   };
 
   return (
     <div className="w-full max-w-sm h-full bg-white shadow-2xl overflow-y-auto flex flex-col">
       <div className="p-4 border-b flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Diseña tu Estilo</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Diseñalo Ya</h2>
           <p className="text-sm text-gray-500">Personaliza cada detalle.</p>
         </div>
-        <button 
-          onClick={onReset} 
-          title="Restablecer Diseño"
-          className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500"
-        >
+        <button onClick={onReset} title="Restablecer Diseño" className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500">
            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5" /><path d="M4 9a9 9 0 0 1 14.24-4.56l-1.09 1.09A7 7 0 0 0 8.01 16.5l-2.06-2.06" /><path d="M20 15a9 9 0 0 1-14.24 4.56l1.09-1.09A7 7 0 0 0 15.99 7.5l2.06 2.06" /></svg>
         </button>
       </div>
 
       <div className="flex-grow">
-        {/* ... Secciones 1 (Producto) y 2 (Colores) sin cambios ... */}
         <Section title="1. Elige tu Producto" defaultOpen={true}>
           <div className="flex space-x-2">
             {productOptions.map(p => (
@@ -86,40 +98,51 @@ export default function EditorUI({
             ))}
           </div>
         </Section>
+        
         <Section title="2. Colores" defaultOpen={true}>
-            <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
-                <label className="text-sm font-medium text-gray-700">Cuerpo Principal</label><input type="color" value={colors.body} onChange={(e) => handleColorChange('body', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-                <label className="text-sm font-medium text-gray-700">Correas de ajuste</label><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-                <label className="text-sm font-medium text-gray-700">Correas de carga</label><input type="color" value={colors.loadStraps} onChange={(e) => handleColorChange('loadStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-                <label className="text-sm font-medium text-gray-700">Bolsillos Laterales</label><input type="color" value={colors.sidePockets} onChange={(e) => handleColorChange('sidePockets', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-            </div>
+          <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
+            <label className="text-sm font-medium text-gray-700">Cuerpo Principal</label><input type="color" value={colors.body} onChange={(e) => handleColorChange('body', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+            <label className="text-sm font-medium text-gray-700">Correas de ajuste</label><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+            <label className="text-sm font-medium text-gray-700">Correas de carga</label><input type="color" value={colors.loadStraps} onChange={(e) => handleColorChange('loadStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+            <label className="text-sm font-medium text-gray-700">Bolsillos Laterales</label><input type="color" value={colors.sidePockets} onChange={(e) => handleColorChange('sidePockets', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+          </div>
         </Section>
         
         <Section title="3. Materiales y Estampados">
           <div className="grid grid-cols-2 gap-2">
             {textureOptions.map(opt => ( <button key={opt.id} onClick={() => handleTextureSelection(opt.id)} className={`px-3 py-2 text-sm rounded-md font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${ texture === opt.id || texture.startsWith(opt.id + '-') ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}> {opt.name} </button> ))}
           </div>
-          
-          {/* Panel de Variantes de Tela */}
           {texture.startsWith('canvas-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes de Tela:</h4> <div className="flex space-x-2"> {canvasVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
-          
           {texture.startsWith('leather-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes de Cuero:</h4> <div className="flex space-x-2"> {leatherVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
           {texture.startsWith('geometric-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes Geométricas:</h4> <div className="flex space-x-2"> {geometricVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
-          
           <button onClick={onOpenDrawing} className="w-full mt-4 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-500"> Modo Creativo (Dibujar) </button>
         </Section>
         
-        {/* ... Sección 4 (Texto) y Botón de Guardar sin cambios ... */}
         <Section title="4. Grabado de Texto">
-            <div className="space-y-4">
-              <div> <label className="text-sm font-medium text-gray-700">Contenido</label> <input type="text" value={customText.content} onChange={(e) => handleTextChange('content', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" /> </div>
-              <div className="grid grid-cols-2 items-center gap-4"> <label className="text-sm font-medium">Color</label> <input type="color" value={customText.color} onChange={(e) => handleTextChange('color', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" /> </div>
-              <div> <label className="text-sm font-medium text-gray-700">Tipografía</label> <select value={customText.font} onChange={(e) => handleTextChange('font', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"> {fontOptions.map(font => <option key={font} value={font}>{font.replace(/-/g, ' ')}</option>)} </select> </div>
-              <div> <label className="text-sm font-medium text-gray-700">Tamaño: {customText.size}</label> <input type="range" min="1" max="10" step="0.1" value={customText.size} onChange={(e) => handleTextChange('size', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-              <div> <label className="text-sm font-medium text-gray-700">Posición Horizontal (X): {customText.positionX.toFixed(2)}</label> <input type="range" min="-1" max="1" step="0.01" value={customText.positionX} onChange={(e) => handleTextChange('positionX', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-              <div> <label className="text-sm font-medium text-gray-700">Posición Vertical (Y): {customText.positionY.toFixed(2)}</label> <input type="range" min="-1.5" max="1.5" step="0.01" value={customText.positionY} onChange={(e) => handleTextChange('positionY', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-              <div> <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label> <input type="range" min="0.26" max="0.46" step="0.005" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-            </div>
+          <div className="space-y-4">
+            <div> <label className="text-sm font-medium text-gray-700">Contenido</label> <input type="text" value={customText.content} onChange={(e) => handleTextChange('content', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" /> </div>
+            <div className="grid grid-cols-2 items-center gap-4"> <label className="text-sm font-medium">Color</label> <input type="color" value={customText.color} onChange={(e) => handleTextChange('color', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" /> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Tipografía</label> <select value={customText.font} onChange={(e) => handleTextChange('font', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"> {fontOptions.map(font => <option key={font} value={font}>{font.replace(/-/g, ' ')}</option>)} </select> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Tamaño: {customText.size}</label> <input type="range" min="1" max="10" step="0.1" value={customText.size} onChange={(e) => handleTextChange('size', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Posición Horizontal (X): {customText.positionX.toFixed(2)}</label> <input type="range" min="-1" max="1" step="0.01" value={customText.positionX} onChange={(e) => handleTextChange('positionX', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Posición Vertical (Y): {customText.positionY.toFixed(2)}</label> <input type="range" min="-1.5" max="1.5" step="0.01" value={customText.positionY} onChange={(e) => handleTextChange('positionY', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label> <input type="range" min="0.26" max="0.46" step="0.005" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+          </div>
+        </Section>
+
+        <Section title="5. Sube tu Imagen">
+            <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleImageFileChange} className="hidden" />
+            <button onClick={() => fileInputRef.current.click()} className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
+                Seleccionar Imagen
+            </button>
+            {hasCustomImage && (
+                <div className="mt-4 space-y-4">
+                    <div> <label className="text-sm font-medium text-gray-700">Posición X: {imageTransform.offsetX.toFixed(2)}</label> <input type="range" min="0" max="1" step="0.01" value={imageTransform.offsetX} onChange={(e) => handleTransformChange('offsetX', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+                    <div> <label className="text-sm font-medium text-gray-700">Posición Y: {imageTransform.offsetY.toFixed(2)}</label> <input type="range" min="0" max="1" step="0.01" value={imageTransform.offsetY} onChange={(e) => handleTransformChange('offsetY', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+                    <div> <label className="text-sm font-medium text-gray-700">Escala (Zoom): {imageTransform.scale.toFixed(2)}</label> <input type="range" min="0.1" max="5" step="0.1" value={imageTransform.scale} onChange={(e) => handleTransformChange('scale', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+                    <div> <label className="text-sm font-medium text-gray-700">Rotación: {imageTransform.rotation.toFixed(2)}</label> <input type="range" min="0" max={Math.PI * 2} step="0.01" value={imageTransform.rotation} onChange={(e) => handleTransformChange('rotation', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+                </div>
+            )}
         </Section>
       </div>
 

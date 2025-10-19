@@ -17,12 +17,21 @@ const initialState = {
     content: 'OEMN',
     color: '#000000',
     font: 'Ailerons',
-    size: 1,
+    size: 1, // Corregido a 1 por defecto
     positionX: 0,
     positionY: 0.35,
     positionZ: 0.36,
   },
   drawingTexture: null,
+  customImage: {
+    src: null,
+    transform: {
+      offsetX: 0.5,
+      offsetY: 0.5,
+      scale: 1,
+      rotation: 0,
+    }
+  }
 };
 
 function App() {
@@ -32,23 +41,32 @@ function App() {
   const [customText, setCustomText] = useState(initialState.customText);
   const [drawingTexture, setDrawingTexture] = useState(initialState.drawingTexture);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [customImage, setCustomImage] = useState(initialState.customImage);
 
   const handleApplyDrawing = (dataUrl) => {
     setDrawingTexture(dataUrl);
     setTexture('custom'); // Activa la textura de dibujo
     setIsDrawing(false);
   };
+
+  const handleImageUpload = (dataUrl) => {
+    setCustomImage(prev => ({ ...prev, src: dataUrl }));
+    setTexture('customImage'); // Activa la textura de imagen subida
+  };
+
+  const setImageTransform = (transform) => {
+    setCustomImage(prev => ({...prev, transform}));
+  };
   
-  // Función para resetear todo al estado inicial
   const handleReset = useCallback(() => {
     setProductType(initialState.productType);
     setColors(initialState.colors);
     setTexture(initialState.texture);
     setCustomText(initialState.customText);
     setDrawingTexture(initialState.drawingTexture);
+    setCustomImage(initialState.customImage);
   }, []);
 
-  // Función para guardar el diseño
   const handleSave = async () => {
     const designData = {
       productType,
@@ -56,6 +74,7 @@ function App() {
       texture,
       customText,
       drawingTexture,
+      customImage,
     };
     try {
       const response = await fetch('http://localhost:5001/api/designs', {
@@ -85,6 +104,10 @@ function App() {
         onSave={handleSave}
         onOpenDrawing={() => setIsDrawing(true)}
         onReset={handleReset}
+        onImageUpload={handleImageUpload}
+        imageTransform={customImage.transform}
+        setImageTransform={setImageTransform}
+        hasCustomImage={!!customImage.src}
       />
 
       <div className="flex-grow h-full">
@@ -94,6 +117,7 @@ function App() {
           texture={texture}
           customText={customText}
           drawingTexture={drawingTexture}
+          customImage={customImage}
         />
       </div>
     </div>
