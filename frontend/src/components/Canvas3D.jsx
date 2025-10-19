@@ -21,32 +21,29 @@ const PbrMaterial = ({ path }) => {
     return <meshStandardMaterial {...pbrTextures} roughness={1.0} metalness={0.0} />;
 };
 
-// Componente de material simplificado
 const BodyMaterial = ({ texture, color, drawingTexture }) => {
     const [drawingTex, setDrawingTex] = useState(null);
-
-    useEffect(() => {
-        if (drawingTexture) {
-            new THREE.TextureLoader().load(drawingTexture, t => { t.flipY = false; t.needsUpdate = true; setDrawingTex(t); });
-        } else {
-            setDrawingTex(null);
-        }
-    }, [drawingTexture]);
+    useEffect(() => { if (drawingTexture) { new THREE.TextureLoader().load(drawingTexture, t => { t.flipY = false; t.needsUpdate = true; setDrawingTex(t); }); } else { setDrawingTex(null); } }, [drawingTexture]);
     
-    // Lógica de prioridad simplificada
     if (texture === 'custom' && drawingTex) {
         return <meshStandardMaterial map={drawingTex} roughness={0.8} />;
-    } else if (texture.startsWith('leather-')) {
-        const [, variant] = texture.split('-');
-        return <PbrMaterial path={`/textures/leather/${variant}`} />;
-    } else if (texture === 'canvas') {
-        return <PbrMaterial path="/textures/canvas" />;
-    } else if (texture.startsWith('geometric-')) {
-        const [, variant] = texture.split('-');
-        return <PbrMaterial path={`/textures/geometric/${variant || 'v1'}`} />;
-    } else {
-        return <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />;
     }
+    
+    const [category, variant] = (texture || 'none').split('-');
+
+    if (category === 'leather') {
+        return <PbrMaterial path={`/textures/leather/${variant}`} />;
+    }
+    if (category === 'canvas') {
+        const canvasVariant = variant || 'v1';
+        return <PbrMaterial path={`/textures/canvas/${canvasVariant}`} />;
+    }
+    if (category === 'geometric') {
+        const geometricVariant = variant || 'v1';
+        return <PbrMaterial path={`/textures/geometric/${geometricVariant}`} />;
+    }
+
+    return <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />;
 };
 
 const Backpack = (props) => {
@@ -89,7 +86,7 @@ const Backpack = (props) => {
     );
 };
 
-// Componentes placeholder restaurados
+// ... Componentes Bag y MateBag sin cambios ...
 const Bag = (props) => (
   <group position-y={-0.75} {...props}>
     <mesh castShadow receiveShadow>
@@ -115,7 +112,6 @@ const MateBag = (props) => (
   </group>
 );
 
-
 export default function Canvas3D({ productType, ...props}) {
     const renderProduct = () => {
         switch(productType) {
@@ -128,7 +124,8 @@ export default function Canvas3D({ productType, ...props}) {
     return (
         <Canvas shadows dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 5] }}>
             <Suspense fallback={null}>
-                <Stage environment="city" intensity={0.4} adjustCamera preset="rembrandt">
+                {/* Intensidad del entorno reducida para un aspecto más suave */}
+                <Stage environment="city" intensity={0.25} adjustCamera preset="rembrandt">
                    {renderProduct()}
                 </Stage>
             </Suspense>

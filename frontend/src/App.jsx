@@ -48,7 +48,7 @@ function App() {
     setDrawingTexture(initialState.drawingTexture);
   }, []);
 
-  // Función para guardar el diseño (ahora más simple)
+  // Función para guardar el diseño
   const handleSave = async () => {
     const designData = {
       productType,
