@@ -7,19 +7,20 @@ export default function App() {
   const [productType, setProductType] = useState('backpack');
   const [colors, setColors] = useState({
     body: '#ffffff',
-    adjustmentStraps: '#333333',
+    adjustmentStraps: '#969696', // Color por defecto gris
     loadStraps: '#555555',
     sidePockets: '#cccccc',
   });
   const [texture, setTexture] = useState('none');
   
-  // Estado del texto simplificado, sin la propiedad 'font'
   const [customText, setCustomText] = useState({
     content: 'OEMN',
     color: '#000000',
     size: 2.5,
-    positionX: 0, 
-    positionY: 0.25,
+    font: 'Ailerons', // Nueva fuente por defecto
+    positionX: 0,
+    positionY: 0.6, // Posición vertical por defecto más arriba
+    positionZ: 0.4, // Nueva profundidad por defecto (valor medio del nuevo slider)
   });
 
   const [drawingTexture, setDrawingTexture] = useState(null);
