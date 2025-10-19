@@ -19,7 +19,6 @@ export default function App() {
     size: 1,
     positionX: 0,
     positionY: 0.35,
-    // Nuevo valor por defecto para que sea el centro del slider
     positionZ: 0.36, 
   });
   const [isDrawing, setIsDrawing] = useState(false);

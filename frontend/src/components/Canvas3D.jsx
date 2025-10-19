@@ -3,7 +3,6 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, useGLTF, Text, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Tu lista de fuentes exacta
 const fontUrls = {
     'Ailerons': '/fonts/Ailerons.woff', 'Aqua': '/fonts/Aqua.woff', 'CraftyHoliday': '/fonts/CraftyHoliday.woff', 
     'Formula1-Bold': '/fonts/Formula1-Bold.woff', 'Formula1-Italic': '/fonts/Formula1-Italic.woff',
@@ -15,7 +14,6 @@ const fontUrls = {
     'parley-regular': '/fonts/parley-regular.woff',
 };
 
-// Helper function to set texture properties
 const applyTextureProperties = (textures) => {
     for (const key in textures) {
         const tex = textures[key];
@@ -39,7 +37,6 @@ const PbrMaterial = ({ path }) => {
         applyTextureProperties(pbrTextures);
     }, [pbrTextures]);
 
-    // Material ajustado para ser menos brilloso
     return <meshStandardMaterial {...pbrTextures} roughness={0.85} metalness={0.1} />;
 };
 
@@ -64,8 +61,11 @@ const BodyMaterial = ({ textureId, color, drawingTexture }) => {
     if (category === 'canvas') {
         return <PbrMaterial path="/textures/canvas" />;
     }
+    // Lógica actualizada para manejar variantes geométricas
     if (category === 'geometric') {
-        return <PbrMaterial path="/textures/geometric" />;
+        // Si no hay variante (caso inicial), usa v1 por defecto.
+        const geometricVariant = variant || 'v1';
+        return <PbrMaterial path={`/textures/geometric/${geometricVariant}`} />;
     }
 
     // Fallback for 'none' (Liso) and any other case
@@ -121,7 +121,6 @@ const Backpack = ({ colors, texture, customText, drawingTexture }) => {
 };
 
 
-// Fallback components for other product types
 const Bag = (props) => (
   <group position-y={-0.75} {...props}>
     <mesh castShadow receiveShadow>
@@ -161,7 +160,6 @@ export default function Canvas3D({ productType, colors, texture, customText, dra
     return (
         <Canvas shadows dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 5] }}>
             <Suspense fallback={null}>
-                {/* Intensidad del entorno reducida para bajar los reflejos */}
                 <Stage environment="city" intensity={0.5} adjustCamera preset="rembrandt">
                     {renderProduct()}
                 </Stage>
