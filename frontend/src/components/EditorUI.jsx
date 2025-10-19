@@ -1,177 +1,153 @@
 import React, { useState } from 'react';
 
-// ... (Opciones de producto y color sin cambios) ...
-const productOptions = [
-  { id: 'backpack', name: 'Mochila' },
-  { id: 'bag', name: 'Bolso' },
-  { id: 'mateBag', name: 'Bolso Matero' },
-];
-const colorOptions = [
-    { id: 'body', name: 'Cuerpo Principal' },
-    { id: 'adjustmentStraps', name: 'Correas de ajuste' },
-    { id: 'loadStraps', name: 'Correas de carga' },
-    { id: 'sidePockets', name: 'Bolsillos Laterales' },
-];
-const textureCategories = {
-  base: [
+const Section = ({ title, children, defaultOpen = true }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-gray-200">
+      <h3
+        className="text-lg font-semibold text-gray-800 p-4 cursor-pointer flex justify-between items-center"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {title}
+        <span>{isOpen ? '−' : '+'}</span>
+      </h3>
+      {isOpen && <div className="p-4 space-y-4">{children}</div>}
+    </div>
+  );
+};
+
+export default function EditorUI({
+  productType, setProductType,
+  colors, setColors,
+  texture, setTexture,
+  customText, setCustomText,
+  onSave, onOpenDrawing
+}) {
+
+  const productOptions = ['backpack', 'bag', 'mateBag'];
+  const textureOptions = [
     { id: 'none', name: 'Liso' },
-    { id: 'canvas', name: 'Lona' },
+    { id: 'canvas', name: 'Tela' },
     { id: 'leather', name: 'Cuero' },
-    { id: 'geometric', name: 'Geométrico' },
-  ],
-  leather: [
+    { id: 'geometric', name: 'Tela Geométrica' },
+  ];
+  const leatherVariants = [
     { id: 'leather-brown', name: 'Marrón' },
     { id: 'leather-black', name: 'Negro' },
     { id: 'leather-white', name: 'Blanco' },
-  ],
-};
+  ];
 
-// --- LISTA DE FUENTES ACTUALIZADA CON TUS ARCHIVOS ---
-const fontOptions = [
-    { id: 'Ailerons', name: 'Ailerons' },
-    { id: 'Aqua', name: 'Aqua' },
-    { id: 'CraftyHoliday', name: 'Crafty Holiday' },
-    { id: 'Formula1-Black', name: 'Formula1 Black' },
-    { id: 'Formula1-Bold_web', name: 'Formula1 Bold Web' },
-    { id: 'Formula1-Bold', name: 'Formula1 Bold' },
-    { id: 'Formula1-Italic', name: 'Formula1 Italic' },
-    { id: 'Formula1-Regular', name: 'Formula1 Regular' },
-    { id: 'Formula1-Wide', name: 'Formula1 Wide' },
-    { id: 'Hyped', name: 'Hyped' },
-    { id: 'Jelle-Roman', name: 'Jelle Roman' },
-    { id: 'koliko-Bold', name: 'Koliko Bold' },
-    { id: 'koliko-Light', name: 'Koliko Light' },
-    { id: 'koliko-Regular', name: 'Koliko Regular' },
-    { id: 'Lombok-Regular', name: 'Lombok' },
-    { id: 'Lottebytes', name: 'Lottebytes' },
-    { id: 'Love', name: 'Love' },
-    { id: 'Modeka', name: 'Modeka' },
-    { id: 'Neutro-ExtraBold', name: 'Neutro Extra Bold' },
-    { id: 'Neutro-Outline', name: 'Neutro Outline' },
-    { id: 'Nordic-Alternative-egular', name: 'Nordic Alternative' }, // Corregido 'egular' a 'Regular' en el nombre visible
-    { id: 'parley-bold', name: 'Parley Bold' },
-    { id: 'parley-regular', name: 'Parley Regular' },
-];
+  const fontOptions = [
+    'Ailerons', 'Aqua', 'CraftyHoliday', 'Formula1-Black', 'Formula1-Bold_web', 
+    'Formula1-Bold', 'Formula1-Italic', 'Formula1-Regular', 'Formula1-Wide', 
+    'Hyped', 'Jelle-Roman', 'koliko-Bold', 'koliko-Light', 'koliko-Regular', 
+    'Lombok-Regular', 'Lottebytes', 'Love', 'Modeka', 'Neutro-ExtraBold', 
+    'Neutro-Outline', 'Nordic-Alternative-egular', 'parley-bold', 'parley-regular'
+  ];
 
-const Section = ({ title, children }) => (
-  <div className="mb-6">
-    <h3 className="text-sm font-bold uppercase text-gray-800 border-b pb-2 mb-4">{title}</h3>
-    {children}
-  </div>
-);
-
-export default function EditorUI({
-  productType, setProductType, colors, handleColorChange,
-  texture, setTexture, customText, setCustomText,
-  onSaveDesign, onOpenDrawing,
-}) {
-  const [activeTextureCat, setActiveTextureCat] = useState('base');
-
-  // --- LÓGICA DE TEXTURAS CORREGIDA ---
-  const handleTextureClick = (id) => {
-    // Si es un botón de categoría (ej: 'leather'), cambia la vista
-    if (textureCategories[id]) {
-      setActiveTextureCat(id);
-    } 
-    // Si es una selección final (ej: 'none' o 'leather-brown')
-    else {
-      setTexture(id);
-      // Si estamos en una subcategoría y elegimos una opción, no volvemos a la base
-      // a menos que la opción sea 'none'
-      if (id === 'none') {
-        setActiveTextureCat('base');
+  const handleColorChange = (part, value) => setColors(prev => ({ ...prev, [part]: value }));
+  const handleTextChange = (field, value) => setCustomText(prev => ({ ...prev, [field]: value }));
+  const handleTextureSelection = (id) => {
+    if (id === 'leather') {
+      // If leather is clicked, default to the first variant if not already on a leather variant
+      if (!texture.startsWith('leather-')) {
+        setTexture('leather-brown');
       }
+    } else {
+      setTexture(id);
     }
   };
 
-  const currentTextureList = textureCategories[activeTextureCat] || textureCategories.base;
-
   return (
-    <div className="max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-gray-900 mb-1">Diseña tu Estilo</h2>
-      <p className="text-gray-500 mb-8">Personaliza cada detalle a tu gusto.</p>
-      
-      <Section title="1. Elige tu Producto">
-        <div className="flex space-x-2">
-          {productOptions.map(opt => (
-            <button key={opt.id} onClick={() => setProductType(opt.id)} className={`px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${productType === opt.id ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
-              {opt.name}
-            </button>
-          ))}
-        </div>
-      </Section>
+    <div className="w-full max-w-sm h-full bg-white shadow-2xl overflow-y-auto flex flex-col">
+      <div className="p-4 border-b">
+        <h2 className="text-2xl font-bold text-gray-900">Diseña tu Estilo</h2>
+        <p className="text-sm text-gray-500">Personaliza cada detalle a tu gusto.</p>
+      </div>
 
-      <Section title="2. Colores">
-        <div className="space-y-3">
-          {colorOptions.map(opt => (
-            <div key={opt.id} className="flex items-center justify-between">
-              <label htmlFor={`${opt.id}-color`} className="text-gray-700">{opt.name}</label>
-              <input id={`${opt.id}-color`} type="color" value={colors[opt.id]} onChange={(e) => handleColorChange(opt.id, e.target.value)} className="w-8 h-8 rounded border-gray-300 cursor-pointer"/>
+      <div className="flex-grow">
+        <Section title="1. Elige tu Producto" defaultOpen={true}>
+          <div className="flex space-x-2">
+            {productOptions.map(p => (
+              <button key={p} onClick={() => setProductType(p)} className={`px-3 py-2 text-sm rounded-md font-semibold transition-colors ${productType === p ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+                {p === 'backpack' ? 'Mochila' : p === 'bag' ? 'Bolso' : 'Bolso Matero'}
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <Section title="2. Colores" defaultOpen={true}>
+            <div className="grid grid-cols-2 items-center gap-4">
+                <span>Cuerpo Principal</span><input type="color" value={colors.body} onChange={(e) => handleColorChange('body', e.target.value)} className="w-full h-8 rounded border border-gray-300" />
+                <span>Correas de ajuste</span><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border border-gray-300" />
+                <span>Correas de carga</span><input type="color" value={colors.loadStraps} onChange={(e) => handleColorChange('loadStraps', e.target.value)} className="w-full h-8 rounded border border-gray-300" />
+                <span>Bolsillos Laterales</span><input type="color" value={colors.sidePockets} onChange={(e) => handleColorChange('sidePockets', e.target.value)} className="w-full h-8 rounded border border-gray-300" />
             </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="3. Materiales y Estampados (Cuerpo Principal)">
-        {activeTextureCat !== 'base' && (
-          <button onClick={() => setActiveTextureCat('base')} className="text-sm text-indigo-600 font-semibold mb-2 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            Volver
-          </button>
-        )}
-        <div className="grid grid-cols-2 gap-2">
-          {currentTextureList.map(opt => {
-            const isSelected = texture === opt.id || (activeTextureCat === 'base' && texture.startsWith(opt.id) && opt.id !== 'none');
-            return (
-              <button key={opt.id} onClick={() => handleTextureClick(opt.id)} className={`px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${isSelected ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+        </Section>
+        
+        <Section title="3. Materiales y Estampados">
+          <div className="grid grid-cols-2 gap-2">
+            {textureOptions.map(opt => (
+              <button key={opt.id} onClick={() => handleTextureSelection(opt.id)} className={`px-3 py-2 text-sm rounded-md font-semibold transition-colors ${texture === opt.id || (opt.id === 'leather' && texture.startsWith('leather-')) ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
                 {opt.name}
               </button>
-            );
-          })}
-        </div>
-        <button onClick={onOpenDrawing} className="w-full mt-3 px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200 bg-purple-600 text-white shadow hover:bg-purple-700">
-          Modo Creativo (Dibujar)
-        </button>
-      </Section>
-      
-      <Section title="4. Grabado de Texto (Cuerpo Principal)">
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-600 block mb-1">Contenido</label>
-            <input type="text" value={customText.content} onChange={(e) => setCustomText(p => ({...p, content: e.target.value}))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"/>
+            ))}
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600 block mb-1">Tipografía</label>
-            <select value={customText.font} onChange={(e) => setCustomText(p => ({...p, font: e.target.value}))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-              {fontOptions.map(opt => (<option key={opt.id} value={opt.id}>{opt.name}</option>))}
-            </select>
+          {texture.startsWith('leather-') && (
+            <div className="mt-4 p-3 bg-gray-100 rounded">
+              <h4 className="text-sm font-semibold mb-2">Variantes de Cuero:</h4>
+              <div className="flex space-x-2">
+                {leatherVariants.map(variant => (
+                  <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}>
+                    {variant.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <button onClick={onOpenDrawing} className="w-full mt-4 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 shadow">
+            Modo Creativo (Dibujar)
+          </button>
+        </Section>
+
+        <Section title="4. Grabado de Texto">
+          <div className="space-y-4">
+            <div>
+                <label className="text-sm font-medium text-gray-700">Contenido</label>
+                <input type="text" value={customText.content} onChange={(e) => handleTextChange('content', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm" />
+            </div>
+            <div className="grid grid-cols-2 items-center gap-4">
+                <label className="text-sm font-medium">Color</label>
+                <input type="color" value={customText.color} onChange={(e) => handleTextChange('color', e.target.value)} className="w-full h-8 rounded border border-gray-300" />
+            </div>
+             <div>
+                <label className="text-sm font-medium text-gray-700">Tipografía</label>
+                <select value={customText.font} onChange={(e) => handleTextChange('font', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    {fontOptions.map(font => <option key={font} value={font}>{font.split('-')[0]}</option>)}
+                </select>
+            </div>
+            <div>
+                <label className="text-sm font-medium text-gray-700">Tamaño: {customText.size}</label>
+                <input type="range" min="1" max="10" value={customText.size} onChange={(e) => handleTextChange('size', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+             <div>
+                <label className="text-sm font-medium text-gray-700">Posición Horizontal (X): {customText.positionX.toFixed(2)}</label>
+                <input type="range" min="-1" max="1" step="0.01" value={customText.positionX} onChange={(e) => handleTextChange('positionX', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+             <div>
+                <label className="text-sm font-medium text-gray-700">Posición Vertical (Y): {customText.positionY.toFixed(2)}</label>
+                <input type="range" min="-1.5" max="1.5" step="0.01" value={customText.positionY} onChange={(e) => handleTextChange('positionY', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
+             <div>
+                <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label>
+                <input type="range" min="0.2" max="0.6" step="0.01" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+            </div>
           </div>
-          <div>
-             <label className="text-sm font-medium text-gray-600 block mb-1">Tamaño ({customText.size})</label>
-             <input type="range" min="1" max="5" step="0.1" value={customText.size} onChange={(e) => setCustomText(p => ({ ...p, size: parseFloat(e.target.value) }))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-          </div>
-          <div>
-             <label className="text-sm font-medium text-gray-600 block mb-1">Posición Horizontal</label>
-             <input type="range" min="-0.5" max="0.5" step="0.01" value={customText.positionX} onChange={(e) => setCustomText(p => ({ ...p, positionX: parseFloat(e.target.value) }))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-          </div>
-          <div>
-             <label className="text-sm font-medium text-gray-600 block mb-1">Posición Vertical</label>
-             <input type="range" min="-0.5" max="1" step="0.01" value={customText.positionY} onChange={(e) => setCustomText(p => ({ ...p, positionY: parseFloat(e.target.value) }))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-          </div>
-          <div>
-             {/* --- SLIDER DE PROFUNDIDAD CORREGIDO --- */}
-             <label className="text-sm font-medium text-gray-600 block mb-1">Profundidad</label>
-             <input type="range" min="0.3" max="0.5" step="0.005" value={customText.positionZ} onChange={(e) => setCustomText(p => ({ ...p, positionZ: parseFloat(e.target.value) }))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"/>
-          </div>
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-600">Color</label>
-            <input type="color" value={customText.color} onChange={(e) => setCustomText(p => ({...p, color: e.target.value}))} className="w-8 h-8 rounded border-gray-300 cursor-pointer"/>
-          </div>
-        </div>
-      </Section>
-      
-      <div className="mt-10">
-        <button onClick={onSaveDesign} className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-all duration-200 shadow-lg">
+        </Section>
+      </div>
+
+      <div className="p-4 mt-auto border-t">
+        <button onClick={onSave} className="w-full px-4 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-lg">
           Guardar Diseño
         </button>
       </div>
