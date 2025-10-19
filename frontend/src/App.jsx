@@ -7,36 +7,25 @@ export default function App() {
   const [productType, setProductType] = useState('backpack');
   const [colors, setColors] = useState({
     body: '#ffffff',
-    adjustmentStraps: '#969696', // Color por defecto gris
-    loadStraps: '#555555',
-    sidePockets: '#cccccc',
+    adjustmentStraps: '#969696',
+    loadStraps: '#333333',
+    sidePockets: '#666666',
   });
   const [texture, setTexture] = useState('none');
-  
   const [customText, setCustomText] = useState({
     content: 'OEMN',
     color: '#000000',
-    size: 2.5,
-    font: 'Ailerons', // Nueva fuente por defecto
+    font: 'Formula1-Bold',
+    size: 1,
     positionX: 0,
-    positionY: 0.6, // Posición vertical por defecto más arriba
-    positionZ: 0.4, // Nueva profundidad por defecto (valor medio del nuevo slider)
+    positionY: 0.35,
+    // Nuevo valor por defecto para que sea el centro del slider
+    positionZ: 0.36, 
   });
-
-  const [drawingTexture, setDrawingTexture] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [drawingTexture, setDrawingTexture] = useState(null);
 
-  const handleColorChange = (part, color) => {
-    setColors(prev => ({ ...prev, [part]: color }));
-  };
-
-  const handleApplyDrawing = (dataUrl) => {
-    setDrawingTexture(dataUrl);
-    setTexture('custom');
-    setIsDrawing(false);
-  };
-  
-  const handleSaveDesign = async () => {
+  const handleSave = async () => {
     const designData = {
       productType,
       colors,
@@ -57,27 +46,31 @@ export default function App() {
       alert('¡Tu diseño ha sido guardado con éxito!');
     } catch (error) {
       console.error('Error al guardar el diseño:', error);
-      alert('Hubo un problema al guardar tu diseño. Inténtalo de nuevo.');
+      alert('Hubo un problema al guardar tu diseño.');
     }
+  };
+  
+  const handleApplyDrawing = (dataUrl) => {
+    setDrawingTexture(dataUrl);
+    setTexture('custom');
+    setIsDrawing(false);
   };
 
   return (
-    <div className="w-full h-screen grid grid-cols-1 lg:grid-cols-3 font-sans">
-      <div className="lg:col-span-1 bg-white p-6 overflow-y-auto">
-        <EditorUI
-          productType={productType}
-          setProductType={setProductType}
-          colors={colors}
-          handleColorChange={handleColorChange}
-          texture={texture}
-          setTexture={setTexture}
-          customText={customText}
-          setCustomText={setCustomText}
-          onSaveDesign={handleSaveDesign}
-          onOpenDrawing={() => setIsDrawing(true)}
-        />
-      </div>
-      <div className="lg:col-span-2 bg-gray-100 relative">
+    <div className="w-screen h-screen bg-gray-100 flex font-sans">
+      <EditorUI
+        productType={productType}
+        setProductType={setProductType}
+        colors={colors}
+        setColors={setColors}
+        texture={texture}
+        setTexture={setTexture}
+        customText={customText}
+        setCustomText={setCustomText}
+        onSave={handleSave}
+        onOpenDrawing={() => setIsDrawing(true)}
+      />
+      <div className="flex-1 h-full relative">
         <Canvas3D 
           productType={productType}
           colors={colors}
@@ -86,7 +79,7 @@ export default function App() {
           drawingTexture={drawingTexture}
         />
       </div>
-      {isDrawing && (
+       {isDrawing && (
         <DrawingCanvas 
           onClose={() => setIsDrawing(false)}
           onApply={handleApplyDrawing}
