@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Esquema simplificado sin los campos de la imagen
 const DesignSchema = new Schema({
     productType: { type: String, required: true },
     colors: {
@@ -9,6 +8,7 @@ const DesignSchema = new Schema({
         adjustmentStraps: String,
         loadStraps: String,
         sidePockets: String,
+        frontPocket: String,
     },
     texture: { type: String, default: 'none' },
     customText: {
@@ -20,7 +20,15 @@ const DesignSchema = new Schema({
         positionY: Number,
         positionZ: Number,
     },
-    drawingTexture: { type: String }, // Base64 del lienzo de dibujo
+    customImage: {
+        src: String, // Almacenará la imagen en formato Base64
+        // Guardamos los datos de transformación
+        transform: {
+            scale: Number,
+            offsetX: Number,
+            offsetY: Number,
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now

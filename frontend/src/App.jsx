@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import EditorUI from './components/EditorUI';
 import Canvas3D from './components/Canvas3D';
-import DrawingCanvas from './components/DrawingCanvas';
 
-// Estado inicial centralizado para facilitar el reseteo
 const initialState = {
   productType: 'backpack',
   colors: {
@@ -11,25 +9,25 @@ const initialState = {
     adjustmentStraps: '#969696',
     loadStraps: '#333333',
     sidePockets: '#cccccc',
+    frontPocket: '#ffffff',
   },
   texture: 'none',
   customText: {
     content: 'OEMN',
     color: '#000000',
     font: 'Ailerons',
-    size: 1, // Corregido a 1 por defecto
+    size: 1,
     positionX: 0,
     positionY: 0.35,
     positionZ: 0.36,
   },
-  drawingTexture: null,
   customImage: {
     src: null,
+    // Estado inicial para la transformación de la imagen
     transform: {
-      offsetX: 0.5,
-      offsetY: 0.5,
-      scale: 1,
-      rotation: 0,
+      scale: 1,      // Zoom inicial
+      offsetX: 0.5,  // Posición X centrada
+      offsetY: 0.5,  // Posición Y centrada
     }
   }
 };
@@ -39,31 +37,27 @@ function App() {
   const [colors, setColors] = useState(initialState.colors);
   const [texture, setTexture] = useState(initialState.texture);
   const [customText, setCustomText] = useState(initialState.customText);
-  const [drawingTexture, setDrawingTexture] = useState(initialState.drawingTexture);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [customImage, setCustomImage] = useState(initialState.customImage);
 
-  const handleApplyDrawing = (dataUrl) => {
-    setDrawingTexture(dataUrl);
-    setTexture('custom'); // Activa la textura de dibujo
-    setIsDrawing(false);
-  };
-
   const handleImageUpload = (dataUrl) => {
-    setCustomImage(prev => ({ ...prev, src: dataUrl }));
-    setTexture('customImage'); // Activa la textura de imagen subida
+    // Si se quita la imagen, reseteamos todo el estado de la imagen
+    if (!dataUrl) {
+      setCustomImage(initialState.customImage);
+    } else {
+      setCustomImage(prev => ({ ...prev, src: dataUrl }));
+    }
   };
 
+  // Nueva función para actualizar la transformación de la imagen desde los sliders
   const setImageTransform = (transform) => {
     setCustomImage(prev => ({...prev, transform}));
   };
-  
+
   const handleReset = useCallback(() => {
     setProductType(initialState.productType);
     setColors(initialState.colors);
     setTexture(initialState.texture);
     setCustomText(initialState.customText);
-    setDrawingTexture(initialState.drawingTexture);
     setCustomImage(initialState.customImage);
   }, []);
 
@@ -73,7 +67,6 @@ function App() {
       colors,
       texture,
       customText,
-      drawingTexture,
       customImage,
     };
     try {
@@ -94,20 +87,18 @@ function App() {
 
   return (
     <div className="w-screen h-screen bg-gray-100 flex font-sans">
-      {isDrawing && <DrawingCanvas onClose={() => setIsDrawing(false)} onApply={handleApplyDrawing} />}
-      
       <EditorUI
         productType={productType} setProductType={setProductType}
         colors={colors} setColors={setColors}
         texture={texture} setTexture={setTexture}
         customText={customText} setCustomText={setCustomText}
         onSave={handleSave}
-        onOpenDrawing={() => setIsDrawing(true)}
         onReset={handleReset}
         onImageUpload={handleImageUpload}
+        hasCustomImage={!!customImage.src}
+        // Pasamos el estado y el setter para la transformación
         imageTransform={customImage.transform}
         setImageTransform={setImageTransform}
-        hasCustomImage={!!customImage.src}
       />
 
       <div className="flex-grow h-full">
@@ -116,7 +107,6 @@ function App() {
           colors={colors}
           texture={texture}
           customText={customText}
-          drawingTexture={drawingTexture}
           customImage={customImage}
         />
       </div>

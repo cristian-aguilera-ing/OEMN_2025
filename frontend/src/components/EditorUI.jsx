@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 
-// Sub-componente para secciones colapsables, mejorando la UX
+// El componente Section no cambia
 const Section = ({ title, children, defaultOpen = false }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
   return (
     <div className="border-b border-gray-200">
       <h3
@@ -19,35 +19,25 @@ const Section = ({ title, children, defaultOpen = false }) => {
   );
 };
 
+
 export default function EditorUI({
   productType, setProductType,
   colors, setColors,
   texture, setTexture,
   customText, setCustomText,
-  onSave, onOpenDrawing,
-  onImageUpload, imageTransform, setImageTransform, hasCustomImage,
-  onReset
+  onSave, onReset,
+  onImageUpload, hasCustomImage // Recibimos props para la imagen
 }) {
   const fileInputRef = useRef(null);
 
   const productOptions = ['backpack', 'bag', 'mateBag'];
-
-  const baseTextureOptions = [
-    { id: 'none', name: 'Liso' },
-    { id: 'canvas', name: 'Tela' },
-    { id: 'leather', name: 'Cuero' },
-    { id: 'geometric', name: 'Tela Geométrica' },
+  const textureOptions = [
+    { id: 'none', name: 'Liso' }, { id: 'canvas', name: 'Tela' },
+    { id: 'leather', name: 'Cuero' }, { id: 'geometric', name: 'Tela Geométrica' },
   ];
-  
-  // Añadimos dinámicamente la opción "Tu Imagen" si existe una imagen cargada
-  const textureOptions = hasCustomImage
-    ? [...baseTextureOptions, { id: 'customImage', name: 'Tu Imagen' }]
-    : baseTextureOptions;
-
   const canvasVariants = [ { id: 'canvas-v1', name: 'V1' }, { id: 'canvas-v2', name: 'V2' }, { id: 'canvas-v3', name: 'V3' }, { id: 'canvas-v4', name: 'V4' } ];
   const leatherVariants = [ { id: 'leather-brown', name: 'Marrón' }, { id: 'leather-black', name: 'Negro' }, { id: 'leather-white', name: 'Blanco' } ];
   const geometricVariants = [ { id: 'geometric-v1', name: 'V1' }, { id: 'geometric-v2', name: 'V2' }, { id: 'geometric-v3', name: 'V3' } ];
-  
   const fontOptions = [ 'Ailerons', 'Aqua', 'CraftyHoliday', 'Formula1-Bold', 'Formula1-Italic', 'Hyped', 'Jelle-Roman', 'koliko-Bold', 'koliko-Light', 'koliko-Regular', 'Lombok-Regular', 'Lottebytes', 'Love', 'Modeka', 'Neutro-ExtraBold', 'Neutro-Outline', 'Nordic-Alternative-egular', 'parley-bold', 'parley-regular'];
 
   const handleColorChange = (part, value) => setColors(prev => ({ ...prev, [part]: value }));
@@ -60,20 +50,14 @@ export default function EditorUI({
     else setTexture(id);
   };
 
+  // Función para procesar el archivo de imagen seleccionado
   const handleImageFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => onImageUpload(event.target.result);
+      reader.onload = (event) => onImageUpload(event.target.result); // Llama a la función de App.jsx
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleTransformChange = (field, value) => {
-    setImageTransform({
-      ...imageTransform,
-      [field]: parseFloat(value)
-    });
   };
 
   return (
@@ -105,17 +89,17 @@ export default function EditorUI({
             <label className="text-sm font-medium text-gray-700">Correas de ajuste</label><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
             <label className="text-sm font-medium text-gray-700">Correas de carga</label><input type="color" value={colors.loadStraps} onChange={(e) => handleColorChange('loadStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
             <label className="text-sm font-medium text-gray-700">Bolsillos Laterales</label><input type="color" value={colors.sidePockets} onChange={(e) => handleColorChange('sidePockets', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+            <label className="text-sm font-medium text-gray-700">Bolsillo delantero</label><input type="color" value={colors.frontPocket} onChange={(e) => handleColorChange('frontPocket', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
           </div>
         </Section>
         
-        <Section title="3. Materiales y Estampados">
+        <Section title="3. Materiales y Estampados (Cuerpo)">
           <div className="grid grid-cols-2 gap-2">
             {textureOptions.map(opt => ( <button key={opt.id} onClick={() => handleTextureSelection(opt.id)} className={`px-3 py-2 text-sm rounded-md font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${ texture === opt.id || texture.startsWith(opt.id + '-') ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}> {opt.name} </button> ))}
           </div>
           {texture.startsWith('canvas-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes de Tela:</h4> <div className="flex space-x-2"> {canvasVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
           {texture.startsWith('leather-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes de Cuero:</h4> <div className="flex space-x-2"> {leatherVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
           {texture.startsWith('geometric-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes Geométricas:</h4> <div className="flex space-x-2"> {geometricVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
-          <button onClick={onOpenDrawing} className="w-full mt-4 px-4 py-2 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-purple-500"> Modo Creativo (Dibujar) </button>
         </Section>
         
         <Section title="4. Grabado de Texto">
@@ -129,19 +113,18 @@ export default function EditorUI({
             <div> <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label> <input type="range" min="0.26" max="0.46" step="0.005" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
           </div>
         </Section>
-
-        <Section title="5. Sube tu Imagen">
+        
+        {/* Nueva sección para subir imagen */}
+        <Section title="5. Sube tu Imagen para el Bolsillo">
             <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleImageFileChange} className="hidden" />
             <button onClick={() => fileInputRef.current.click()} className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
-                Seleccionar Imagen
+                {hasCustomImage ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
             </button>
+            {/* Botón para quitar la imagen si existe */}
             {hasCustomImage && (
-                <div className="mt-4 space-y-4">
-                    <div> <label className="text-sm font-medium text-gray-700">Posición X: {imageTransform.offsetX.toFixed(2)}</label> <input type="range" min="0" max="1" step="0.01" value={imageTransform.offsetX} onChange={(e) => handleTransformChange('offsetX', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-                    <div> <label className="text-sm font-medium text-gray-700">Posición Y: {imageTransform.offsetY.toFixed(2)}</label> <input type="range" min="0" max="1" step="0.01" value={imageTransform.offsetY} onChange={(e) => handleTransformChange('offsetY', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-                    <div> <label className="text-sm font-medium text-gray-700">Escala (Zoom): {imageTransform.scale.toFixed(2)}</label> <input type="range" min="0.1" max="5" step="0.1" value={imageTransform.scale} onChange={(e) => handleTransformChange('scale', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-                    <div> <label className="text-sm font-medium text-gray-700">Rotación: {imageTransform.rotation.toFixed(2)}</label> <input type="range" min="0" max={Math.PI * 2} step="0.01" value={imageTransform.rotation} onChange={(e) => handleTransformChange('rotation', e.target.value)} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-                </div>
+                <button onClick={() => onImageUpload(null)} className="w-full mt-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500">
+                    Quitar Imagen
+                </button>
             )}
         </Section>
       </div>
