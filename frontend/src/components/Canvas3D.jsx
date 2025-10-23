@@ -14,28 +14,18 @@ const PbrMaterial = ({ path }) => {
 
 
 // Componente actualizado para manejar la transformación de la textura
-const CustomImageMaterial = ({ src, transform }) => {
+const CustomImageMaterial = ({ src }) => {
     const texture = useTexture(src);
     
     // Usamos useMemo para recalcular las propiedades de la textura solo cuando cambian
     useMemo(() => {
         texture.flipY = false;
-        // RepeatWrapping nos permite escalar la textura
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-
-        // Aplicamos la escala (zoom)
-        texture.repeat.set(transform.scale, transform.scale);
-
-        // Calculamos el offset para centrar la imagen escalada
-        // Esto mueve el punto de inicio de la textura
-        texture.offset.set(
-            (1 - transform.scale) * transform.offsetX,
-            (1 - transform.scale) * transform.offsetY
-        );
+        // ClampToEdgeWrapping evita que la textura se repita
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
         
         texture.needsUpdate = true;
-    }, [texture, transform]);
+    }, [texture]);
 
     return <meshStandardMaterial map={texture} roughness={0.8} />;
 };
@@ -68,10 +58,9 @@ const Backpack = (props) => {
                     case 'BolsilloMaterial':
                         return (
                             <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow>
-                                {props.customImage.src ? 
-                                    // Pasamos el objeto transform al componente de la imagen
-                                    <CustomImageMaterial src={props.customImage.src} transform={props.customImage.transform} /> :
-                                    <BodyMaterial {...props} color={props.colors.frontPocket}/>
+                                {props.customImage.src ?
+                                    <CustomImageMaterial src={props.customImage.src} /> :
+                                    <meshStandardMaterial color={props.colors.frontPocket} />
                                 }
                             </mesh>
                         );
