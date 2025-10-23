@@ -20,9 +20,9 @@ const CustomImageMaterial = ({ src, transform }) => {
     // Usamos useMemo para recalcular las propiedades de la textura solo cuando cambian
     useMemo(() => {
         texture.flipY = false;
-        // RepeatWrapping nos permite escalar la textura
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
+        // ClampToEdgeWrapping evita que la textura se repita
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
 
         // Aplicamos la escala (zoom)
         texture.repeat.set(transform.scale, transform.scale);
