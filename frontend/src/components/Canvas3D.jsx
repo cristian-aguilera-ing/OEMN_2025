@@ -27,13 +27,11 @@ const CustomImageMaterial = ({ src, transform }) => {
         // Aplicamos la escala (zoom)
         texture.repeat.set(transform.scale, transform.scale);
 
-        // La fórmula correcta para centrar una textura con `repeat` es (1 - 1/escala) / 2
-        // A esto le sumamos el desplazamiento manual del usuario.
-        const baseOffset = (1 - 1 / transform.scale) / 2;
-        texture.offset.set(
-            baseOffset + (transform.offsetX - 0.5),
-            baseOffset + (transform.offsetY - 0.5)
-        );
+        // Centramos la imagen escalada y aplicamos el desplazamiento del usuario.
+        // La fórmula (1 - 1/escala) * offsetX centra la imagen cuando offsetX es 0.5
+        const totalOffsetX = (1 - 1 / transform.scale) * transform.offsetX;
+        const totalOffsetY = (1 - 1 / transform.scale) * transform.offsetY;
+        texture.offset.set(totalOffsetX, totalOffsetY);
         
         texture.needsUpdate = true;
     }, [texture, transform]);
