@@ -29,6 +29,8 @@
 	// Instala las dependencias en frontend y backend para que no tengas que hacerlo manualmente.
 	"postCreateCommand": "cd /workspace/frontend && npm install && cd /workspace/backend && npm install --include=dev",
 
+	// --- AÑADE ESTA LÍNEA ---
+
 	// Asegura que al cerrar VS Code, se apaguen los contenedores.
 	"shutdownAction": "stopCompose"
 }

@@ -25,7 +25,7 @@ const initialState = {
     src: null,
     // Estado inicial para la transformación de la imagen
     transform: {
-      scale: 1,      // Zoom inicial
+      scale: 0.5,      // Zoom inicial
       offsetX: 0.5,  // Posición X centrada
       offsetY: 0.5,  // Posición Y centrada
     }

@@ -8,9 +8,6 @@ WORKDIR /workspace/backend
 # 3. Copiar los archivos de definición de dependencias.
 COPY package*.json ./
 
-# 4. Instalar TODAS las dependencias del proyecto (incluidas las de desarrollo).
-# La bandera '--include=dev' asegura que 'nodemon' y otras herramientas se instalen.
-RUN npm install --include=dev
 
 # 5. Copiar el resto del código fuente de la aplicación.
 COPY . .
@@ -18,6 +15,8 @@ COPY . .
 # 6. Exponer el puerto que utilizará el servidor Express.
 EXPOSE 5001
 
-# 7. El comando por defecto para ejecutar cuando el contenedor se inicie.
-CMD ["npm", "start"]
-
+# 7. Comando por defecto.
+# Usamos 'sleep infinity' para asegurar que el contenedor se mantenga vivo.
+# Aunque tu docker-compose.yml ya lo define, es una buena práctica
+# tener un CMD que no termine inmediatamente.
+CMD ["sleep", "infinity"]

@@ -6,10 +6,12 @@ FROM node:22-alpine
 WORKDIR /workspace/frontend
 
 # 3. Copiar los archivos de definición de dependencias.
+# Esto es bueno para el cacheo de capas si decidieras volver a añadir npm install.
 COPY package*.json ./
 
 # 4. Instalar las dependencias del proyecto.
-RUN npm install
+# ELIMINADO: 'RUN npm install'
+# (El postCreateCommand en devcontainer.json se encargará de esto)
 
 # 5. Copiar el resto del código fuente de la aplicación.
 COPY . .
@@ -18,6 +20,6 @@ COPY . .
 EXPOSE 5173
 
 # 7. El comando por defecto para ejecutar cuando el contenedor se inicie.
-# El docker-compose.yml usa 'npm run dev' para el desarrollo.
-CMD ["npm", "run", "dev"]
-
+# CAMBIADO: 'sleep infinity' es una mejor opción que 'npm run dev' como CMD por defecto
+# aunque el docker-compose.yml ya lo está sobreescribiendo.
+CMD ["sleep", "infinity"]
