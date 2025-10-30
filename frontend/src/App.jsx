@@ -15,19 +15,23 @@ const initialState = {
   customText: {
     content: 'OEMN',
     color: '#000000',
-    font: 'Ailerons',
+    font: 'Formula1-Bold',
     size: 1,
     positionX: 0,
-    positionY: 0.35,
-    positionZ: 0.36,
+    positionY: 0.92,
+    positionZ: 0.28,
   },
   customImage: {
     src: null,
     // Estado inicial para la transformación de la imagen
     transform: {
-      scale: 0.5,      // Zoom inicial
-      offsetX: 0.5,  // Posición X centrada
-      offsetY: 0.5,  // Posición Y centrada
+      scale: 0.45,      // Zoom inicial (10x zoom)
+      // CAMBIO: Estos valores ahora son "Pan" (paneo/movimiento)
+      // He calculado el valor para que coincida con tu '0.85' anterior
+      // (0.85 - 0.5) * 0.9 = 0.315
+      // La nueva fórmula es: (Offset Base) + (Pan)
+      offsetX: 1.30,  // Pan X
+      offsetY: 1.75,  // Pan Y
     }
   }
 };
@@ -40,17 +44,19 @@ function App() {
   const [customImage, setCustomImage] = useState(initialState.customImage);
 
   const handleImageUpload = (dataUrl) => {
-    // Si se quita la imagen, reseteamos todo el estado de la imagen
+    // Si se quita la imagen (dataUrl es null)
     if (!dataUrl) {
       setCustomImage(initialState.customImage);
     } else {
-      setCustomImage(prev => ({ ...prev, src: dataUrl }));
+      // ¡ESTA ES LA CORRECCIÓN!
+      // Cuando subimos una imagen, reseteamos su estado 'transform'
+      // al valor inicial para evitar el 'undefined'.
+      setCustomImage(prev => ({
+        ...prev, // Mantenemos estado previo si lo hubiera
+        src: dataUrl,
+        transform: initialState.customImage.transform // ¡Restauramos el transform!
+      }));
     }
-  };
-
-  // Nueva función para actualizar la transformación de la imagen desde los sliders
-  const setImageTransform = (transform) => {
-    setCustomImage(prev => ({...prev, transform}));
   };
 
   const handleReset = useCallback(() => {
@@ -98,7 +104,7 @@ function App() {
         hasCustomImage={!!customImage.src}
         // Pasamos el estado y el setter para la transformación
         imageTransform={customImage.transform}
-        setImageTransform={setImageTransform}
+        setImageTransform={setCustomImage} // <-- CAMBIA A setCustomImage
       />
 
       <div className="flex-grow h-full">
@@ -115,4 +121,3 @@ function App() {
 }
 
 export default App;
-

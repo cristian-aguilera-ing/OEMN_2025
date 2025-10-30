@@ -3,10 +3,10 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stage, useGLTF, Text, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
-// URLs de las fuentes
-const fontUrls = { 'Ailerons': '/fonts/Ailerons.woff', 'Aqua': '/fonts/Aqua.woff', 'CraftyHoliday': '/fonts/CraftyHoliday.woff', 'Formula1-Bold': '/fonts/Formula1-Bold.woff', 'Formula1-Italic': '/fonts/Formula1-Italic.woff', 'Hyped': '/fonts/Hyped.woff', 'Jelle-Roman': '/fonts/Jelle-Roman.woff', 'koliko-Bold': '/fonts/koliko-Bold.woff', 'koliko-Light': '/fonts/koliko-Light.woff', 'koliko-Regular': '/fonts/koliko-Regular.woff', 'Lombok-Regular': '/fonts/Lombok-Regular.woff', 'Lottebytes': '/fonts/Lottebytes.woff', 'Love': '/fonts/Love.woff', 'Modeka': '/fonts/Modeka.woff', 'Neutro-ExtraBold': '/fonts/Neutro-ExtraBold.woff', 'Neutro-Outline': '/fonts/Neutro-Outline.woff', 'Nordic-Alternative-egular': '/fonts/Nordic-Alternative-Regular.woff', 'parley-bold': '/fonts/parley-bold.woff', 'parley-regular': '/fonts/parley-regular.woff'};
+// URLs de las fuentes (sin cambios)
+const fontUrls = { 'Ailerons': '/fonts/Ailerons.woff', 'Aqua': '/fonts/Aqua.woff', 'CraftyHoliday': '/fonts/CraftyHoliday.woff', 'Formula1-Bold': '/fonts/Formula1-Bold.woff', 'Formula1-Italic': '/fonts/Formula1-Italic.woff', 'Hyped': '/fonts/Hyped.woff', 'Jellee-Roman': '/fonts/Jellee-Roman.woff', 'koliko-Bold': '/fonts/koliko-Bold.woff', 'koliko-Light': '/fonts/koliko-Light.woff', 'koliko-Regular': '/fonts/koliko-Regular.woff', 'Lombok-Regular': '/fonts/Lombok-Regular.woff', 'Lottebytes': '/fonts/Lottebytes.woff', 'Love': '/fonts/Love.woff', 'Modeka': '/fonts/Modeka.woff', 'Neutro-ExtraBold': '/fonts/Neutro-ExtraBold.woff', 'Neutro-Outline': '/fonts/Neutro-Outline.woff', 'Nordic-Alternative-regular': '/fonts/Nordic-Alternative-regular.woff', 'parley-bold': '/fonts/parley-bold.woff', 'parley-regular': '/fonts/parley-regular.woff'};
 
-// Componente para materiales PBR
+// Componente para materiales PBR (sin cambios)
 const PbrMaterial = ({ path }) => {
     const pbrTextures = useTexture({ map: `${path}/color.jpg`, normalMap: `${path}/normal.jpg`, roughnessMap: `${path}/roughness.jpg` });
     useEffect(() => { Object.values(pbrTextures).forEach(tex => { if (tex) { tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(3, 3); tex.flipY = false; tex.needsUpdate = true; } }); }, [pbrTextures]);
@@ -17,22 +17,35 @@ const PbrMaterial = ({ path }) => {
 const CustomImageMaterial = ({ src, transform }) => {
     const texture = useTexture(src);
     
-    useMemo(() => {
-        texture.flipY = false;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(transform.scale, transform.scale);
-        texture.offset.set(
-            (1 - transform.scale) * transform.offsetX,
-            (1 - transform.scale) * transform.offsetY
-        );
-        texture.needsUpdate = true;
-    }, [texture, transform]);
+    useEffect(() => {
+        if (texture) { // Asegurarnos que la textura esté cargada
+            texture.flipY = false;
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
+            
+            // 1. Aplicamos el Zoom (escala de repetición)
+            texture.repeat.set(transform.scale, transform.scale);
+            
+            // 2. ¡NUEVA LÓGICA DE OFFSET!
+            // Calculamos el offset base para centrar el zoom
+            const baseOffsetX = (1 - transform.scale) / 2;
+            const baseOffsetY = (1 - transform.scale) / 2;
+
+            // 3. Añadimos el "pan" (movimiento) de los sliders
+            // Esto permite que los sliders X/Y funcionen independientemente del zoom
+            texture.offset.set(
+                baseOffsetX + transform.offsetX,
+                baseOffsetY + transform.offsetY
+            );
+            
+            texture.needsUpdate = true;
+        }
+    }, [texture, transform]); // Se ejecuta solo cuando la textura o la transformación cambian
 
     return <meshStandardMaterial map={texture} roughness={0.8} />;
 };
 
-// Componente para el material del cuerpo que aplica texturas
+// Componente para el material del cuerpo que aplica texturas (sin cambios)
 const BodyMaterial = ({ texture, color }) => {
     const [category, variant] = (texture || 'none').split('-');
     if (category === 'leather') return <PbrMaterial path={`/textures/leather/${variant}`} />;
@@ -41,7 +54,7 @@ const BodyMaterial = ({ texture, color }) => {
     return <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />;
 };
 
-// Componente de la mochila con la lógica de materiales actualizada
+// Componente de la mochila (sin cambios en la lógica de materiales)
 const Backpack = (props) => {
     const { nodes, materials } = useGLTF('/mochila_dior.glb');
     
@@ -56,7 +69,6 @@ const Backpack = (props) => {
                 
                 switch (node.name) {
                     case 'Pattern':
-                        // A este mesh sí se le aplican las texturas del BodyMaterial
                         return ( <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow> <BodyMaterial {...props} color={props.colors.body}/> </mesh> );
                     
                     case 'BolsilloMaterial':
@@ -64,7 +76,6 @@ const Backpack = (props) => {
                             <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow>
                                 {props.customImage.src ? 
                                     <CustomImageMaterial src={props.customImage.src} transform={props.customImage.transform} /> :
-                                    // CAMBIO: Usamos un material estándar para evitar aplicar las texturas del cuerpo
                                     <meshStandardMaterial color={props.colors.frontPocket} roughness={0.8} metalness={0.1} />
                                 }
                             </mesh>
@@ -99,11 +110,11 @@ const Backpack = (props) => {
     );
 };
 
-// Otros componentes de productos
+// Otros componentes de productos (sin cambios)
 const Bag = (props) => ( <group position-y={-0.75} {...props}> <mesh castShadow receiveShadow> <boxGeometry args={[2.5, 1.5, 0.7]} /> <meshStandardMaterial color={props.colors.body || '#ffffff'} /> </mesh> <mesh castShadow receiveShadow position={[0, 0.8, 0]} rotation={[Math.PI / 2, 0, 0]}> <torusGeometry args={[0.8, 0.05, 16, 100, Math.PI]} /> <meshStandardMaterial color={props.colors.loadStraps || '#000000'} /> </mesh> </group> );
 const MateBag = (props) => ( <group position-y={-1} {...props}> <mesh castShadow receiveShadow> <cylinderGeometry args={[0.8, 0.8, 2, 32]} /> <meshStandardMaterial color={props.colors.body || '#ffffff'} /> </mesh> <mesh castShadow receiveShadow position={[0, 1, 0]}> <torusGeometry args={[1.2, 0.04, 16, 100]} /> <meshStandardMaterial color={props.colors.loadStraps || '#000000'} /> </mesh> </group> );
 
-// Componente principal Canvas3D
+// Componente principal Canvas3D (sin cambios)
 export default function Canvas3D({ productType, ...props}) {
     const renderProduct = () => {
         switch(productType) {

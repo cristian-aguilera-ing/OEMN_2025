@@ -26,7 +26,8 @@ export default function EditorUI({
   texture, setTexture,
   customText, setCustomText,
   onSave, onReset,
-  onImageUpload, hasCustomImage // Recibimos props para la imagen
+  onImageUpload, hasCustomImage,
+  imageTransform, setImageTransform // <-- 1. RECIBIMOS LOS PROPS QUE FALTABAN
 }) {
   const fileInputRef = useRef(null);
 
@@ -57,6 +58,32 @@ export default function EditorUI({
       const reader = new FileReader();
       reader.onload = (event) => onImageUpload(event.target.result); // Llama a la función de App.jsx
       reader.readAsDataURL(file);
+    }
+    
+    // <-- 2. FIX BUG RE-UPLOAD: Reseteamos el valor del input
+    // Esto permite que el evento 'onChange' se dispare de nuevo si se selecciona el mismo archivo
+    if (e.target) {
+      e.target.value = null;
+    }
+  };
+
+  // <-- 3. NUEVA FUNCIÓN: Handler para los sliders de la imagen
+  const handleImageTransformChange = (field, value) => {
+    // Usamos 'setImageTransform' (que es 'setCustomImage' en App.jsx)
+    setImageTransform(prev => ({
+      ...prev,
+      transform: {
+        ...prev.transform,
+        [field]: parseFloat(value) // Actualiza 'scale', 'offsetX', o 'offsetY'
+      }
+    }));
+  };
+
+  const handleRemoveImage = () => {
+    onImageUpload(null); // Llama a la función de App.jsx para borrar la imagen
+    // <-- 2. FIX BUG RE-UPLOAD: Reseteamos el input de archivo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
     }
   };
 
@@ -107,7 +134,7 @@ export default function EditorUI({
             <div> <label className="text-sm font-medium text-gray-700">Contenido</label> <input type="text" value={customText.content} onChange={(e) => handleTextChange('content', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" /> </div>
             <div className="grid grid-cols-2 items-center gap-4"> <label className="text-sm font-medium">Color</label> <input type="color" value={customText.color} onChange={(e) => handleTextChange('color', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" /> </div>
             <div> <label className="text-sm font-medium text-gray-700">Tipografía</label> <select value={customText.font} onChange={(e) => handleTextChange('font', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"> {fontOptions.map(font => <option key={font} value={font}>{font.replace(/-/g, ' ')}</option>)} </select> </div>
-            <div> <label className="text-sm font-medium text-gray-700">Tamaño: {customText.size}</label> <input type="range" min="1" max="10" step="0.1" value={customText.size} onChange={(e) => handleTextChange('size', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Tamaño: {customText.size}</label> <input type="range" min="-1" max="3" step="0.1" value={customText.size} onChange={(e) => handleTextChange('size', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
             <div> <label className="text-sm font-medium text-gray-700">Posición Horizontal (X): {customText.positionX.toFixed(2)}</label> <input type="range" min="-1" max="1" step="0.01" value={customText.positionX} onChange={(e) => handleTextChange('positionX', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
             <div> <label className="text-sm font-medium text-gray-700">Posición Vertical (Y): {customText.positionY.toFixed(2)}</label> <input type="range" min="-1.5" max="1.5" step="0.01" value={customText.positionY} onChange={(e) => handleTextChange('positionY', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
             <div> <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label> <input type="range" min="0.26" max="0.46" step="0.005" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
@@ -115,16 +142,63 @@ export default function EditorUI({
         </Section>
         
         {/* Nueva sección para subir imagen */}
-        <Section title="5. Sube tu Imagen para el Bolsillo">
+        <Section title="5. Sube tu Imagen para el Bolsillo" defaultOpen={true}>
             <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleImageFileChange} className="hidden" />
             <button onClick={() => fileInputRef.current.click()} className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
                 {hasCustomImage ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
             </button>
-            {/* Botón para quitar la imagen si existe */}
+            
+            {/* Botón para quitar la imagen si existe (actualizado con el fix) */}
             {hasCustomImage && (
-                <button onClick={() => onImageUpload(null)} className="w-full mt-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500">
+                <button onClick={handleRemoveImage} className="w-full mt-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500">
                     Quitar Imagen
                 </button>
+            )}
+
+            {/* <-- 4. NUEVA SECCIÓN: Sliders condicionales para la imagen */}
+            {hasCustomImage && imageTransform && (
+              <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+                <h4 className="text-sm font-semibold text-gray-700">Ajustar Imagen</h4>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Zoom (Escala): {imageTransform.scale.toFixed(2)}</label>
+                  <input
+                    type="range"
+                    min="0.01" // Evitar que sea 0
+                    max="1.5"  // Rango de 1% a 100%
+                    step="0.01"
+                    value={imageTransform.scale}
+                    onChange={(e) => handleImageTransformChange('scale', e.target.value)}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Posición Horizontal (X): {imageTransform.offsetX.toFixed(2)}</label>
+                  <input
+                    type="range"
+                    min="0" // 0 = borde izquierdo
+                    max="2" // 1 = borde derecho
+                    step="0.01"
+                    value={imageTransform.offsetX}
+                    onChange={(e) => handleImageTransformChange('offsetX', e.target.value)}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Posición Vertical (Y): {imageTransform.offsetY.toFixed(2)}</label>
+                  <input
+                    type="range"
+                    min="0" // 0 = borde inferior
+                    max="2.5" // 1 = borde superior
+                    step="0.01"
+                    value={imageTransform.offsetY}
+                    onChange={(e) => handleImageTransformChange('offsetY', e.target.value)}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </div>
             )}
         </Section>
       </div>
@@ -137,4 +211,3 @@ export default function EditorUI({
     </div>
   );
 }
-
