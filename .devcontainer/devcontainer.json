@@ -1,36 +1,31 @@
 {
-	"name": "Diseña tu Estilo - Dev Env",
-	// Usamos docker-compose para orquestar los servicios.
-	"dockerComposeFile": "../docker-compose.yml",
+  "name": "NUArt Dev Env (Frontend)",
+  
+  // Usamos el docker-compose.yml de la raíz
+  "dockerComposeFile": "../docker-compose.yml",
 
-	// El servicio al que VS Code se conectará.
-	"service": "backend",
+  // ¡Nos conectamos al servicio 'frontend'!
+  "service": "frontend",
 
-	// El directorio de trabajo que se abrirá en VS Code.
-	// Ajustado para apuntar directamente a la carpeta del backend.
-	"workspaceFolder": "/workspace/backend",
+  // Abrimos VS Code en la carpeta del frontend
+  "workspaceFolder": "/workspace/frontend",
 
-	// Personalizaciones para el entorno de VS Code dentro del contenedor.
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"dbaeumer.vscode-eslint",
-				"esbenp.prettier-vscode",
-				"bradlc.vscode-tailwindcss",
-				"mongodb.mongodb-vscode"
-			],
-			"settings": {
-				"terminal.integrated.shell.linux": "/bin/bash"
-			}
-		}
-	},
-	
-	// Comando que se ejecuta DESPUÉS de crear el contenedor por primera vez.
-	// Instala las dependencias en frontend y backend para que no tengas que hacerlo manualmente.
-	"postCreateCommand": "cd /workspace/frontend && npm install && cd /workspace/backend && npm install --include=dev",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "mongodb.mongodb-vscode"
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      }
+    }
+  },
+  
+  // Comando para instalar dependencias en AMBOS servicios
+  "postCreateCommand": "cd /workspace/frontend && npm install && cd /workspace/backend && npm install",
 
-	// --- AÑADE ESTA LÍNEA ---
-
-	// Asegura que al cerrar VS Code, se apaguen los contenedores.
-	"shutdownAction": "stopCompose"
+  "shutdownAction": "stopCompose"
 }

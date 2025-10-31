@@ -1,25 +1,44 @@
 services:
+  # ------ SERVICIO DE FRONTEND (NUEVO) ------
+  frontend:
+    # Usamos el Dockerfile que está en la carpeta ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dts-frontend
+    ports:
+      # Exponemos el puerto 5173 de Vite
+      - "5173:5173"
+    volumes:
+      # Montamos el código fuente del frontend
+      - ./frontend:/workspace/frontend
+      # Montamos el backend también, por si acaso (útil para el devcontainer)
+      - ./backend:/workspace/backend
+    # Mantenemos el contenedor vivo
+    command: sleep infinity
+
+  # ------ SERVICIO DE BACKEND (Corregido) ------
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: dts-backend
     ports:
+      # Tu backend corre en el puerto 3000 según tu server.js
       - "5001:5001"
-      - "5173:5173"  # <-- AÑADE ESTA LÍNEA
     volumes:
-      # Ambas carpetas deben ser visibles para el postCreateCommand
       - ./backend:/workspace/backend
-      - ./frontend:/workspace/frontend 
+      - ./frontend:/workspace/frontend
     environment:
+      # La URL de la base de datos (usa el nombre del servicio 'database')
       - MONGO_URI=mongodb://database:27017/disena_tu_estilo
       - NODE_ENV=development
     depends_on:
       database:
         condition: service_healthy
-    # COMANDO CAMBIADO: Mantiene el contenedor vivo para el devcontainer
     command: sleep infinity
 
+  # ------ SERVICIO DE BASE DE DATOS (Tu original) ------
   database:
     image: mongo:latest
     container_name: dts-database
@@ -33,6 +52,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  # ------ ADMIN DE MONGO (Tu original) ------
+  mongo-express:
+    image: mongo-express:latest
+    container_name: dts-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=database
+    depends_on:
+      database:
+        condition: service_healthy
 
 volumes:
   mongo-data:
