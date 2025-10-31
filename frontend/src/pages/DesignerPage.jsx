@@ -114,7 +114,7 @@ function App() {
         />
       </div> {/* <-- Cierra el div de la sombra aquí */}
 
-      <div className="flex-grow h-full bg-gray-800">
+      <div className="flex-grow h-full bg-gray-300">
         <Canvas3D
           productType={productType}
           colors={colors}
