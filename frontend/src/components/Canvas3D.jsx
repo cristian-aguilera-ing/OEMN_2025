@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, useGLTF, Text, useTexture, Environment, Center } from '@react-three/drei';
+import { OrbitControls, Stage, useGLTF, Text, useTexture, Environment, Center, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // URLs de las fuentes (sin cambios)
@@ -127,15 +127,26 @@ export default function Canvas3D({ productType, ...props}) {
     // frontend/src/components/Canvas3D.jsx
 
     // ... (justo antes del return)
-    
+    // Componente simple para mostrar texto de carga
+    const Loader = () => {
+        return (
+            <Html center> {/* 'Html' nos deja poner HTML dentro del Canvas 3D */}
+                <div style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'sans-serif' }}>
+                    Cargando modelo...
+                </div>
+            </Html>
+        );
+    }
+
+
     return (
-        <Canvas shadows dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 3.4] }}>
+        <Canvas dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 3.1] }}>
             
             {/* PASO 1: Reemplazamos <Stage> por luces manuales
               Esto nos da control total.
             */}
             <ambientLight intensity={0.5} />
-            <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
+            <directionalLight position={[5, 5, 5]} intensity={1} />
             <directionalLight position={[-5, -5, -5]} intensity={0.2} />
 
             {/* PASO 2: Añadimos el entorno (reflejos) por separado,
@@ -143,7 +154,7 @@ export default function Canvas3D({ productType, ...props}) {
             */}
             <Environment preset="city" />
 
-            <Suspense fallback={null}>
+            <Suspense fallback={<Loader />}>
                 {/* PASO 3: Envolvemos tu producto en <Center>
                   para asegurarnos de que quede en medio de la escena,
                   algo que <Stage> también hacía automáticamente.
@@ -153,7 +164,7 @@ export default function Canvas3D({ productType, ...props}) {
                 // Z = mueve adelante/atrás
                 */}
                 
-                <Center position={[0.4, 0.2, 0]}>
+                <Center position={[0.4, 0.3, 0]}>
                    {renderProduct()}
                 </Center>
             </Suspense>
