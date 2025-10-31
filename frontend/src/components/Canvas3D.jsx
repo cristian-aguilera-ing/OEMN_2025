@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, useGLTF, Text, useTexture } from '@react-three/drei';
+import { OrbitControls, Stage, useGLTF, Text, useTexture, Environment, Center } from '@react-three/drei';
 import * as THREE from 'three';
 
 // URLs de las fuentes (sin cambios)
@@ -124,14 +124,42 @@ export default function Canvas3D({ productType, ...props}) {
             default: return <Backpack {...props} />;
         }
     }
+    // frontend/src/components/Canvas3D.jsx
+
+    // ... (justo antes del return)
+    
     return (
-        <Canvas shadows dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 5] }}>
+        <Canvas shadows dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 3.4] }}>
+            
+            {/* PASO 1: Reemplazamos <Stage> por luces manuales
+              Esto nos da control total.
+            */}
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
+            <directionalLight position={[-5, -5, -5]} intensity={0.2} />
+
+            {/* PASO 2: Añadimos el entorno (reflejos) por separado,
+              ya que <Stage> lo hacía por nosotros.
+            */}
+            <Environment preset="city" />
+
             <Suspense fallback={null}>
-                <Stage environment="city" intensity={0.25} adjustCamera preset="rembrandt">
+                {/* PASO 3: Envolvemos tu producto en <Center>
+                  para asegurarnos de que quede en medio de la escena,
+                  algo que <Stage> también hacía automáticamente.
+                // position={[X, Y, Z]}
+                // X = mueve izquierda/derecha
+                // Y = mueve arriba/abajo
+                // Z = mueve adelante/atrás
+                */}
+                
+                <Center position={[0.4, 0.2, 0]}>
                    {renderProduct()}
-                </Stage>
+                </Center>
             </Suspense>
-            <OrbitControls makeDefault autoRotate={false} minPolarAngle={0} maxPolarAngle={Math.PI / 1.5} />
+
+            {/* Los controles de órbita quedan igual */}
+            <OrbitControls makeDefault autoRotate={true} minPolarAngle={0} maxPolarAngle={Math.PI / 1.5} />
         </Canvas>
     );
 }
