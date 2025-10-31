@@ -1,13 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
-// El componente Section no cambia
-const Section = ({ title, children, defaultOpen = false }) => {
-  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+// El componente Section ahora recibe 'isOpen' y 'onClick'
+const Section = ({ title, children, isOpen, onClick }) => {
+  // BORRAMOS la línea: const [isOpen, setIsOpen] = React.useState(defaultOpen);
   return (
     <div className="border-b border-gray-200">
       <h3
         className="text-lg font-semibold text-gray-800 p-4 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition-colors"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onClick}
       >
         {title}
         <span className={`text-gray-400 transform transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`}>
@@ -30,6 +30,18 @@ export default function EditorUI({
   imageTransform, setImageTransform // <-- 1. RECIBIMOS LOS PROPS QUE FALTABAN
 }) {
   const fileInputRef = useRef(null);
+
+// --- AÑADE ESTE BLOQUE ---
+// 1. Estado para el acordeón. (Petición 1: Por defecto, abrimos "2. Colores")
+const [openSection, setOpenSection] = useState('2. Colores');
+
+// 2. Función que maneja el clic (Petición 3: Lógica de acordeón)
+const handleSectionClick = (sectionTitle) => {
+  // Si la sección clicada ya estaba abierta, la cerramos (null)
+  // Si no, la abrimos
+  setOpenSection(prev => (prev === sectionTitle ? null : sectionTitle));
+};
+// --- FIN DEL BLOQUE ---
 
   const productOptions = ['backpack', 'bag', 'mateBag'];
   const textureOptions = [
@@ -88,7 +100,7 @@ export default function EditorUI({
   };
 
   return (
-    <div className="w-full max-w-sm h-full bg-white shadow-2xl overflow-y-auto flex flex-col">
+    <div className="w-full max-w-sm h-full bg-white shadow-2xl flex flex-col">
       <div className="p-4 border-b flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Diseñalo Ya</h2>
@@ -99,8 +111,12 @@ export default function EditorUI({
         </button>
       </div>
 
-      <div className="flex-grow">
-        <Section title="1. Elige tu Producto" defaultOpen={true}>
+      <div className="flex-grow overflow-y-auto">
+        <Section 
+          title="1. Elige tu Producto"
+          isOpen={openSection === '1. Elige tu Producto'}
+          onClick={() => handleSectionClick('1. Elige tu Producto')}
+        >
           <div className="flex space-x-2">
             {productOptions.map(p => (
               <button key={p} onClick={() => setProductType(p)} className={`px-3 py-2 text-sm rounded-md font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${productType === p ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
@@ -110,7 +126,11 @@ export default function EditorUI({
           </div>
         </Section>
         
-        <Section title="2. Colores" defaultOpen={true}>
+        <Section 
+          title="2. Colores"
+          isOpen={openSection === '2. Colores'}
+          onClick={() => handleSectionClick('2. Colores')}
+        >
           <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
             <label className="text-sm font-medium text-gray-700">Cuerpo Principal</label><input type="color" value={colors.body} onChange={(e) => handleColorChange('body', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
             <label className="text-sm font-medium text-gray-700">Correas de ajuste</label><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
@@ -120,7 +140,11 @@ export default function EditorUI({
           </div>
         </Section>
         
-        <Section title="3. Materiales y Estampados (Cuerpo)">
+        <Section 
+          title="3. Materiales y Estampados (Cuerpo)"
+          isOpen={openSection === '3. Materiales y Estampados (Cuerpo)'}
+          onClick={() => handleSectionClick('3. Materiales y Estampados (Cuerpo)')}
+        >
           <div className="grid grid-cols-2 gap-2">
             {textureOptions.map(opt => ( <button key={opt.id} onClick={() => handleTextureSelection(opt.id)} className={`px-3 py-2 text-sm rounded-md font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${ texture === opt.id || texture.startsWith(opt.id + '-') ? 'bg-indigo-600 text-white shadow' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }`}> {opt.name} </button> ))}
           </div>
@@ -129,7 +153,11 @@ export default function EditorUI({
           {texture.startsWith('geometric-') && ( <div className="mt-4 p-3 bg-gray-100 rounded"> <h4 className="text-sm font-semibold mb-2">Variantes Geométricas:</h4> <div className="flex space-x-2"> {geometricVariants.map(variant => ( <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2 py-1 text-xs rounded transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 ${texture === variant.id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 border'}`}> {variant.name} </button> ))} </div> </div> )}
         </Section>
         
-        <Section title="4. Grabado de Texto">
+        <Section 
+          title="4. Grabado de Texto"
+          isOpen={openSection === '4. Grabado de Texto'}
+          onClick={() => handleSectionClick('4. Grabado de Texto')}
+        >
           <div className="space-y-4">
             <div> <label className="text-sm font-medium text-gray-700">Contenido</label> <input type="text" value={customText.content} onChange={(e) => handleTextChange('content', e.target.value)} className="mt-1 w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" /> </div>
             <div className="grid grid-cols-2 items-center gap-4"> <label className="text-sm font-medium">Color</label> <input type="color" value={customText.color} onChange={(e) => handleTextChange('color', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" /> </div>
@@ -142,7 +170,11 @@ export default function EditorUI({
         </Section>
         
         {/* Nueva sección para subir imagen */}
-        <Section title="5. Sube tu Imagen para el Bolsillo" defaultOpen={true}>
+        <Section 
+          title="5. Sube tu Imagen para el Bolsillo"
+          isOpen={openSection === '5. Sube tu Imagen para el Bolsillo'}
+          onClick={() => handleSectionClick('5. Sube tu Imagen para el Bolsillo')}
+        >
             <input type="file" accept="image/png, image/jpeg" ref={fileInputRef} onChange={handleImageFileChange} className="hidden" />
             <button onClick={() => fileInputRef.current.click()} className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
                 {hasCustomImage ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
