@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import EditorUI from '../components/EditorUI';
 import Canvas3D from '../components/Canvas3D';
 
@@ -91,23 +91,30 @@ function App() {
     }
   };
 
-  return (
-    <div className="w-screen h-screen bg-gray-100 flex font-sans pt-16">
-      <EditorUI
-        productType={productType} setProductType={setProductType}
-        colors={colors} setColors={setColors}
-        texture={texture} setTexture={setTexture}
-        customText={customText} setCustomText={setCustomText}
-        onSave={handleSave}
-        onReset={handleReset}
-        onImageUpload={handleImageUpload}
-        hasCustomImage={!!customImage.src}
-        // Pasamos el estado y el setter para la transformación
-        imageTransform={customImage.transform}
-        setImageTransform={setCustomImage} // <-- CAMBIA A setCustomImage
-      />
+  // y fuerza el scroll al inicio.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-      <div className="flex-grow h-full">
+  return (
+    <div className="w-full flex font-sans" style={{ height: 'calc(100vh - 64px)' }}>
+    {/* Añadimos sombra y z-index para que "flote" */}
+      <div className="shadow-2xl z-10">
+        <EditorUI
+          productType={productType} setProductType={setProductType}
+          colors={colors} setColors={setColors}
+          texture={texture} setTexture={setTexture}
+          customText={customText} setCustomText={setCustomText}
+          onSave={handleSave}
+          onReset={handleReset}
+          onImageUpload={handleImageUpload}
+          hasCustomImage={!!customImage.src}
+          imageTransform={customImage.transform}
+          setImageTransform={setCustomImage}
+        />
+      </div> {/* <-- Cierra el div de la sombra aquí */}
+
+      <div className="flex-grow h-full bg-gray-800">
         <Canvas3D
           productType={productType}
           colors={colors}
