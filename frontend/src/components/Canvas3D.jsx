@@ -116,8 +116,8 @@ const Bag = (props) => {
     const { nodes, materials } = useGLTF('/bolso.glb');
 
     // 2. Crea materiales optimizados para las partes del bolso
-    const lateralesMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.laterales }), [props.colors.laterales]);
-    const manijaMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.manija }), [props.colors.manija]);
+    const lateralesMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.lateralMaterial }), [props.colors.lateralMaterial]);
+    const handleMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.handle }), [props.colors.handle]);
 
     return (
         // 3. Usa la misma escala y posición que la mochila para consistencia
@@ -135,7 +135,7 @@ const Bag = (props) => {
                     // CUERPO: usa BodyMaterial. ¡Esto arregla Colores Y Texturas!
                     case 'frenteMaterial':
                         return ( <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow> 
-                                    <BodyMaterial {...props} color={props.colors.cuerpo}/> 
+                                    <BodyMaterial {...props} color={props.colors.frenteMaterial}/> 
                                 </mesh> );
 
                     // LATERALES: usa el material de color
@@ -144,7 +144,7 @@ const Bag = (props) => {
 
                     // MANIJA: usa el material de color
                     case 'handle':
-                        return <mesh key={node.uuid} geometry={node.geometry} material={manijaMaterial} castShadow receiveShadow />;
+                        return <mesh key={node.uuid} geometry={node.geometry} material={handleMaterial} castShadow receiveShadow />;
 
                     // 7. CASO POR DEFECTO (Partes no personalizables)
                     default: 

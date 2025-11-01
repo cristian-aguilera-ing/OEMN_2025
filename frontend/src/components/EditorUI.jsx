@@ -144,9 +144,9 @@ const handleSectionClick = (sectionTitle) => {
           {/* --- Inputs para el BOLSO (NUEVO) --- */}
           {productType === 'bag' && (
             <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
-              <label className="text-sm font-medium text-gray-700">Cuerpo</label><input type="color" value={colors.cuerpo} onChange={(e) => handleColorChange('cuerpo', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-              <label className="text-sm font-medium text-gray-700">Laterales</label><input type="color" value={colors.laterales} onChange={(e) => handleColorChange('laterales', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-              <label className="text-sm font-medium text-gray-700">Manija y Tiras</label><input type="color" value={colors.manija} onChange={(e) => handleColorChange('manija', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Cuerpo</label><input type="color" value={colors.frenteMaterial} onChange={(e) => handleColorChange('frenteMaterial', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Laterales</label><input type="color" value={colors.lateralMaterial} onChange={(e) => handleColorChange('lateralMaterial', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Manija y Tiras</label><input type="color" value={colors.handle} onChange={(e) => handleColorChange('handle', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
             </div>
           )}
 

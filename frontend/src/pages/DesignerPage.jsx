@@ -42,9 +42,9 @@ const bagInitialState = {
   productType: 'bag',
   colors: {
     // Usamos los nombres de mesh que me diste, pero en minúsculas
-    cuerpo: '#ffffff',
-    laterales: '#5A2020',
-    manija: '#5A2020',
+    frenteMaterial: '#ffffff',
+    lateralMaterial: '#5A2020',
+    handle: '#5A2020',
   },
   texture: 'none',
   customText: {
