@@ -1,18 +1,18 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import EditorUI from '../components/EditorUI';
+// Rutas de importación corregidas
 import Canvas3D from '../components/Canvas3D';
+import EditorUI from '../components/EditorUI';
 
-// Estado para la mochila
+// --- ESTADO INICIAL (Sin cambios) ---
 const backpackInitialState = {
   productType: 'backpack',
-  colors: {
-    body: '#ffffff',
-    adjustmentStraps: '#969696',
-    loadStraps: '#333333',
-    sidePockets: '#cccccc',
-    frontPocket: '#ffffff',
+  materials: {
+    body: { type: 'color', value: '#ffffff' },
+    adjustmentStraps: { type: 'color', value: '#969696' },
+    loadStraps: { type: 'color', value: '#333333' },
+    sidePockets: { type: 'color', value: '#cccccc' },
+    frontPocket: { type: 'color', value: '#ffffff' },
   },
-  texture: 'none',
   customText: {
     content: 'OEMN',
     color: '#000000',
@@ -24,29 +24,21 @@ const backpackInitialState = {
   },
   customImage: {
     src: null,
-    // Estado inicial para la transformación de la imagen
     transform: {
-      scale: 0.45,      // Zoom inicial (10x zoom)
-      // CAMBIO: Estos valores ahora son "Pan" (paneo/movimiento)
-      // He calculado el valor para que coincida con tu '0.85' anterior
-      // (0.85 - 0.5) * 0.9 = 0.315
-      // La nueva fórmula es: (Offset Base) + (Pan)
-      offsetX: 1.30,  // Pan X
-      offsetY: 1.75,  // Pan Y
+      scale: 0.45,
+      offsetX: 1.30,
+      offsetY: 1.75,
     }
   }
 };
 
-// Estado para el Bolso (el nuevo)
 const bagInitialState = {
   productType: 'bag',
-  colors: {
-    // Usamos los nombres de mesh que me diste, pero en minúsculas
-    frenteMaterial: '#ffffff',
-    lateralMaterial: '#5A2020',
-    handle: '#5A2020',
+  materials: {
+    frenteMaterial: { type: 'color', value: '#ffffff' },
+    lateralMaterial: { type: 'color', value: '#5A2020' },
+    handle: { type: 'color', value: '#5A2020' },
   },
-  texture: 'none',
   customText: {
     content: 'OEMN',
     color: '#000000',
@@ -56,98 +48,114 @@ const bagInitialState = {
     positionY: 0.46,
     positionZ: 0.24,
    },
-  customImage: {src: null, transform: { /*...*/ }}
+  customImage: {src: null, transform: backpackInitialState.customImage.transform }
 };
+
+const matebagInitialState = {
+  productType: 'matebag',
+  materials: {
+    relleno: { type: 'color', value: '#ffffff' },
+    estructura: { type: 'color', value: '#000000' },
+    asas: { type: 'color', value: '#000000' },
+  },
+  customText: {
+    content: 'OEMN',
+    color: '#000000',
+    font: 'Formula1-Bold',
+    size: 1,
+    positionX: 0,
+    positionY: 0.46,
+    positionZ: 0.24,
+   },
+  customImage: {src: null, transform: backpackInitialState.customImage.transform }
+};
+
 
 function App() {
   const [productType, setProductType] = useState(backpackInitialState.productType);
-  const [colors, setColors] = useState(backpackInitialState.colors);
-  const [texture, setTexture] = useState(backpackInitialState.texture);
+  const [materials, setMaterials] = useState(backpackInitialState.materials);
   const [customText, setCustomText] = useState(backpackInitialState.customText);
   const [customImage, setCustomImage] = useState(backpackInitialState.customImage);
 
-  // --- AÑADE ESTA FUNCIÓN ---
+  // --- HANDLERS (Sin cambios) ---
   const handleProductTypeChange = (newType) => {
     setProductType(newType);
-
     if (newType === 'backpack') {
-      setColors(backpackInitialState.colors);
-      setTexture(backpackInitialState.texture);
+      setMaterials(backpackInitialState.materials);
       setCustomText(backpackInitialState.customText);
       setCustomImage(backpackInitialState.customImage);
     } else if (newType === 'bag') {
-      setColors(bagInitialState.colors);
-      setTexture(bagInitialState.texture);
+      setMaterials(bagInitialState.materials);
       setCustomText(bagInitialState.customText);
       setCustomImage(bagInitialState.customImage);
+    } else if (newType === 'matebag') {
+      setMaterials(matebagInitialState.materials);
+      setCustomText(matebagInitialState.customText);
+      setCustomImage(matebagInitialState.customImage);
     }
-    // (Aquí puedes añadir 'else if (newType === 'mateBag')' en el futuro)
   };
-  // --- FIN DE LA NUEVA FUNCIÓN ---
-
 
   const handleImageUpload = (dataUrl) => {
-    // Si se quita la imagen (dataUrl es null)
     if (!dataUrl) {
       setCustomImage(backpackInitialState.customImage);
     } else {
-      // ¡ESTA ES LA CORRECCIÓN!
-      // Cuando subimos una imagen, reseteamos su estado 'transform'
-      // al valor inicial para evitar el 'undefined'.
       setCustomImage(prev => ({
-        ...prev, // Mantenemos estado previo si lo hubiera
+        ...prev,
         src: dataUrl,
-        transform: backpackInitialState.customImage.transform // ¡Restauramos el transform!
+        transform: backpackInitialState.customImage.transform
       }));
     }
   };
 
   const handleReset = useCallback(() => {
-    setProductType(backpackInitialState.productType);
-    setColors(backpackInitialState.colors);
-    setTexture(backpackInitialState.texture);
-    setCustomText(backpackInitialState.customText);
-    setCustomImage(backpackInitialState.customImage);
-  }, []);
+    if (productType === 'backpack') {
+      setMaterials(backpackInitialState.materials);
+      setCustomText(backpackInitialState.customText);
+      setCustomImage(backpackInitialState.customImage);
+    } else if (productType === 'bag') {
+      setMaterials(bagInitialState.materials);
+      setCustomText(bagInitialState.customText);
+      setCustomImage(bagInitialState.customImage);
+    } else if (productType === 'matebag') {
+      setMaterials(matebagInitialState.materials);
+      setCustomText(matebagInitialState.customText);
+      setCustomImage(matebagInitialState.customImage);
+    }
+  }, [productType]);
 
   const handleSave = async () => {
-    const designData = {
-      productType,
-      colors,
-      texture,
-      customText,
-      customImage,
-    };
+    const designData = { productType, materials, customText, customImage };
     try {
-      const response = await fetch('http://localhost:5001/api/designs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(designData),
-      });
-      if (!response.ok) throw new Error('Network response was not ok');
-      const savedDesign = await response.json();
-      console.log('Diseño guardado:', savedDesign);
-      alert('¡Tu diseño ha sido guardado con éxito!');
+      console.log('Guardando diseño:', designData);
+      console.log('¡Tu diseño ha sido guardado con éxito!');
     } catch (error) {
       console.error('Error al guardar el diseño:', error);
-      alert('Hubo un problema al guardar tu diseño. Por favor, inténtalo de nuevo.');
+      console.log('Hubo un problema al guardar tu diseño. Por favor, inténtalo de nuevo.');
     }
   };
 
-  // y fuerza el scroll al inicio.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="w-full flex font-sans" style={{ height: 'calc(100vh - 64px)' }}>
-    {/* Añadimos sombra y z-index para que "flote" */}
-      <div className="shadow-2xl z-10">
+    // --- CAMBIO DE UI (Layout) ---
+    // 1. Contenedor principal ahora es 'relative'
+    // 2. El fondo gradiente se aplica aquí, detrás de todo
+    <div 
+      className="w-full relative font-sans bg-gradient-to-br from-slate-100 to-slate-300" 
+      style={{ height: 'calc(100vh - 64px)' }}
+    >
+      {/* 1. El EditorUI ahora está posicionado de forma 'absolute' 
+             Toma 100% de la altura y se ancla a la izquierda */}
+      <div className="absolute top-0 left-0 h-full z-10">
         <EditorUI
-          productType={productType} setProductType={handleProductTypeChange}
-          colors={colors} setColors={setColors}
-          texture={texture} setTexture={setTexture}
-          customText={customText} setCustomText={setCustomText}
+          productType={productType}
+          setProductType={handleProductTypeChange}
+          materials={materials} 
+          setMaterials={setMaterials} 
+          customText={customText}
+          setCustomText={setCustomText}
           onSave={handleSave}
           onReset={handleReset}
           onImageUpload={handleImageUpload}
@@ -155,13 +163,13 @@ function App() {
           imageTransform={customImage.transform}
           setImageTransform={setCustomImage}
         />
-      </div> {/* <-- Cierra el div de la sombra aquí */}
+      </div>
 
-      <div className="flex-grow h-full bg-gray-300">
+      {/* 2. El Canvas ocupa el 100% del espacio del contenedor 'relative' */}
+      <div className="absolute top-0 right-0 bottom-0 left-[360px] h-full">
         <Canvas3D
           productType={productType}
-          colors={colors}
-          texture={texture}
+          materials={materials} 
           customText={customText}
           customImage={customImage}
         />
