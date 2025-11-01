@@ -131,13 +131,27 @@ const handleSectionClick = (sectionTitle) => {
           isOpen={openSection === '2. Colores'}
           onClick={() => handleSectionClick('2. Colores')}
         >
-          <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
-            <label className="text-sm font-medium text-gray-700">Cuerpo Principal</label><input type="color" value={colors.body} onChange={(e) => handleColorChange('body', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-            <label className="text-sm font-medium text-gray-700">Correas de ajuste</label><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-            <label className="text-sm font-medium text-gray-700">Correas de carga</label><input type="color" value={colors.loadStraps} onChange={(e) => handleColorChange('loadStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-            <label className="text-sm font-medium text-gray-700">Bolsillos Laterales</label><input type="color" value={colors.sidePockets} onChange={(e) => handleColorChange('sidePockets', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-            <label className="text-sm font-medium text-gray-700">Bolsillo delantero</label><input type="color" value={colors.frontPocket} onChange={(e) => handleColorChange('frontPocket', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
-          </div>
+          {/* --- Inputs para la MOCHILA --- */}
+          {productType === 'backpack' && (
+            <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
+              <label className="text-sm font-medium text-gray-700">Cuerpo Principal</label><input type="color" value={colors.body} onChange={(e) => handleColorChange('body', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Correas de carga</label><input type="color" value={colors.loadStraps} onChange={(e) => handleColorChange('loadStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Correas de ajuste</label><input type="color" value={colors.adjustmentStraps} onChange={(e) => handleColorChange('adjustmentStraps', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Bolsillos Laterales</label><input type="color" value={colors.sidePockets} onChange={(e) => handleColorChange('sidePockets', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Bolsillo delantero</label><input type="color" value={colors.frontPocket} onChange={(e) => handleColorChange('frontPocket', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+            </div>
+          )}
+          {/* --- Inputs para el BOLSO (NUEVO) --- */}
+          {productType === 'bag' && (
+            <div className="grid grid-cols-2 items-center gap-y-3 gap-x-4">
+              <label className="text-sm font-medium text-gray-700">Cuerpo</label><input type="color" value={colors.cuerpo} onChange={(e) => handleColorChange('cuerpo', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Laterales</label><input type="color" value={colors.laterales} onChange={(e) => handleColorChange('laterales', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+              <label className="text-sm font-medium text-gray-700">Manija y Tiras</label><input type="color" value={colors.manija} onChange={(e) => handleColorChange('manija', e.target.value)} className="w-full h-8 rounded border-gray-300 cursor-pointer" />
+            </div>
+          )}
+
+          {/* --- (Aquí puedes añadir un {productType === 'mateBag' && (...)} en el futuro) --- */}
+        
         </Section>
         
         <Section 
@@ -165,11 +179,12 @@ const handleSectionClick = (sectionTitle) => {
             <div> <label className="text-sm font-medium text-gray-700">Tamaño: {customText.size}</label> <input type="range" min="-1" max="3" step="0.1" value={customText.size} onChange={(e) => handleTextChange('size', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
             <div> <label className="text-sm font-medium text-gray-700">Posición Horizontal (X): {customText.positionX.toFixed(2)}</label> <input type="range" min="-1" max="1" step="0.01" value={customText.positionX} onChange={(e) => handleTextChange('positionX', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
             <div> <label className="text-sm font-medium text-gray-700">Posición Vertical (Y): {customText.positionY.toFixed(2)}</label> <input type="range" min="-1.5" max="1.5" step="0.01" value={customText.positionY} onChange={(e) => handleTextChange('positionY', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
-            <div> <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label> <input type="range" min="0.26" max="0.46" step="0.005" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
+            <div> <label className="text-sm font-medium text-gray-700">Profundidad (Z): {customText.positionZ.toFixed(2)}</label> <input type="range" min="-0.46" max="0.46" step="0.005" value={customText.positionZ} onChange={(e) => handleTextChange('positionZ', parseFloat(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" /> </div>
           </div>
         </Section>
         
         {/* Nueva sección para subir imagen */}
+        {productType === 'backpack' && (
         <Section 
           title="5. Sube tu Imagen para el Bolsillo"
           isOpen={openSection === '5. Sube tu Imagen para el Bolsillo'}
@@ -233,6 +248,8 @@ const handleSectionClick = (sectionTitle) => {
               </div>
             )}
         </Section>
+        )}
+        
       </div>
 
       <div className="p-4 mt-auto border-t bg-gray-50">

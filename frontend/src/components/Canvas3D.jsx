@@ -1,6 +1,6 @@
-import React, { Suspense, useMemo, useEffect } from 'react';
+import React, { Suspense, useMemo, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, useGLTF, Text, useTexture, Environment, Center, Html } from '@react-three/drei';
+import { OrbitControls, Stage, useGLTF, Text, useTexture, Environment, Center, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
 // URLs de las fuentes (sin cambios)
@@ -54,7 +54,7 @@ const BodyMaterial = ({ texture, color }) => {
     return <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />;
 };
 
-// Componente de la mochila (sin cambios en la lógica de materiales)
+// Componente de la MOCHILA (sin cambios en la lógica de materiales)
 const Backpack = (props) => {
     const { nodes, materials } = useGLTF('/mochila_dior.glb');
     
@@ -110,37 +110,171 @@ const Backpack = (props) => {
     );
 };
 
-// Otros componentes de productos (sin cambios)
-const Bag = (props) => ( <group position-y={-0.75} {...props}> <mesh castShadow receiveShadow> <boxGeometry args={[2.5, 1.5, 0.7]} /> <meshStandardMaterial color={props.colors.body || '#ffffff'} /> </mesh> <mesh castShadow receiveShadow position={[0, 0.8, 0]} rotation={[Math.PI / 2, 0, 0]}> <torusGeometry args={[0.8, 0.05, 16, 100, Math.PI]} /> <meshStandardMaterial color={props.colors.loadStraps || '#000000'} /> </mesh> </group> );
+// --- BOLSO ---
+const Bag = (props) => {
+    // 1. Carga el modelo .glb del bolso
+    const { nodes, materials } = useGLTF('/bolso.glb');
+
+    // 2. Crea materiales optimizados para las partes del bolso
+    const lateralesMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.laterales }), [props.colors.laterales]);
+    const manijaMaterial = useMemo(() => new THREE.MeshStandardMaterial({ color: props.colors.manija }), [props.colors.manija]);
+
+    return (
+        // 3. Usa la misma escala y posición que la mochila para consistencia
+        <group scale={1.5} position-y={-0.4} dispose={null}>
+
+            {/* 4. Itera sobre TODAS las mallas del bolso */}
+            {Object.values(nodes).map((node) => {
+                if (!node.isMesh) return null;
+
+                // 5. Aplica materiales según el nombre
+                switch (node.name) {
+
+                    // 6. CASOS ESPECIALES (Mallas personalizables)
+
+                    // CUERPO: usa BodyMaterial. ¡Esto arregla Colores Y Texturas!
+                    case 'frenteMaterial':
+                        return ( <mesh key={node.uuid} geometry={node.geometry} castShadow receiveShadow> 
+                                    <BodyMaterial {...props} color={props.colors.cuerpo}/> 
+                                </mesh> );
+
+                    // LATERALES: usa el material de color
+                    case 'lateralMaterial':
+                        return <mesh key={node.uuid} geometry={node.geometry} material={lateralesMaterial} castShadow receiveShadow />;
+
+                    // MANIJA: usa el material de color
+                    case 'handle':
+                        return <mesh key={node.uuid} geometry={node.geometry} material={manijaMaterial} castShadow receiveShadow />;
+
+                    // 7. CASO POR DEFECTO (Partes no personalizables)
+                    default: 
+                        return <mesh key={node.uuid} geometry={node.geometry} material={materials[node.material.name]} castShadow receiveShadow />;
+                }
+            })}
+
+            {/* 8. AÑADE EL TEXTO (¡Esto arregla el Texto!) */}
+            <Suspense fallback={null}>
+                <Text
+                    font={fontUrls[props.customText.font]}
+                    position={[props.customText.positionX, props.customText.positionY, props.customText.positionZ]}
+                    rotation={[0, 0, 0]}
+                    fontSize={props.customText.size * 0.08}
+                    color={props.customText.color}
+                    anchorX="center" anchorY="middle" maxWidth={0.8} textAlign="center"
+                >
+                    {props.customText.content}
+                </Text>
+            </Suspense>
+        </group>
+    );
+};
+
+// --- FIN DEL CÓDIGO DE REEMPLAZO ---
+
+//--- AQUI CAMBIAR ESTA LINEA PARA EL MODELO DEL MATE
 const MateBag = (props) => ( <group position-y={-1} {...props}> <mesh castShadow receiveShadow> <cylinderGeometry args={[0.8, 0.8, 2, 32]} /> <meshStandardMaterial color={props.colors.body || '#ffffff'} /> </mesh> <mesh castShadow receiveShadow position={[0, 1, 0]}> <torusGeometry args={[1.2, 0.04, 16, 100]} /> <meshStandardMaterial color={props.colors.loadStraps || '#000000'} /> </mesh> </group> );
 
 // Componente principal Canvas3D (sin cambios)
 export default function Canvas3D({ productType, ...props}) {
+    const controlsRef = useRef();
+    const [isAutoRotate, setIsAutoRotate] = useState(true);
+    
+    // Este useEffect ahora SÍ funciona
+    useEffect(() => {
+        const controls = controlsRef.current;
+        // 1. Si los controles no están listos, no hagas nada.
+        //    PERO, como 'controlsRef' está en el array de abajo,
+        //    este efecto se volverá a ejecutar cuando esté listo.
+        if (!controls) return;
+
+        // Usamos una variable simple para guardar el ID del timer
+        let timeoutId = null;
+
+        const handleStart = () => {
+            // 2. Detiene la rotación (usando el estado)
+            setIsAutoRotate(false);
+            
+            // 3. Limpia cualquier timer anterior
+            clearTimeout(timeoutId);
+        };
+
+        const handleEnd = () => {
+            // 4. Inicia el timer de 5 seg SÓLO cuando el usuario suelta
+            timeoutId = setTimeout(() => {
+                setIsAutoRotate(true); // 5. Reactiva la rotación (usando el estado)
+            }, 5000); // 5000ms = 5 segundos
+        };
+
+        // 6. Añadimos los listeners para "empezar a tocar" y "soltar"
+        controls.addEventListener("start", handleStart);
+        controls.addEventListener("end", handleEnd);
+
+        // 7. Limpieza al desmontar el componente
+        return () => {
+            controls.removeEventListener("start", handleStart);
+            controls.removeEventListener("end", handleEnd);
+            clearTimeout(timeoutId);
+        };
+        
+    // 8. ¡EL CAMBIO CLAVE! El efecto se re-ejecuta cuando 'controlsRef' (el objeto) se carga.
+    }, [controlsRef]);
+
     const renderProduct = () => {
         switch(productType) {
-            case 'backpack': return <Backpack {...props} />;
-            case 'bag': return <Bag {...props} />;
-            case 'mateBag': return <MateBag {...props} />;
-            default: return <Backpack {...props} />;
+            
+            // --- CASO MOCHILA ---
+            case 'backpack':
+                return (
+                    <>
+                        {/* Configuración específica para la Mochila */}
+                        <PerspectiveCamera makeDefault fov={50} position={[0, 0, 3.1]} />
+                        <Center position={[0.4, 0.3, 0]}>
+                            <Backpack {...props} />
+                        </Center>
+                    </>
+                );
+
+            // --- CASO BOLSO ---
+            case 'bag':
+                return (
+                    <>
+                        {/* Configuración para el Bolso: Cámara más lejos, Fov más bajo y centrado en el origen */}
+                        <PerspectiveCamera makeDefault fov={35} position={[0, 0, 4]} />
+                        <Center position={[0.3, 0, 0]}>
+                            <Bag {...props} />
+                        </Center>
+                    </>
+                );
+
+            // --- CASO BOLSO MATERO ---
+            case 'mateBag':
+                return (
+                    <>
+                        {/* (Usamos la config de la mochila como base, puedes ajustarla luego) */}
+                        <PerspectiveCamera makeDefault fov={50} position={[0, 0, 3.1]} />
+                        <Center position={[0, 0, 0]}>
+                            <MateBag {...props} />
+                        </Center>
+                    </>
+                );
+            
+            // --- CASO POR DEFECTO ---
+            default:
+                return (
+                    <>
+                        <PerspectiveCamera makeDefault fov={50} position={[0, 0, 3.1]} />
+                        <Center position={[0.4, 0.3, 0]}>
+                            <Backpack {...props} />
+                        </Center>
+                    </>
+                );
         }
-    }
+        }
+
     // frontend/src/components/Canvas3D.jsx
 
-    // ... (justo antes del return)
-    // Componente simple para mostrar texto de carga
-    const Loader = () => {
-        return (
-            <Html center> {/* 'Html' nos deja poner HTML dentro del Canvas 3D */}
-                <div style={{ color: 'white', fontSize: '1.5rem', fontFamily: 'sans-serif' }}>
-                    Cargando modelo...
-                </div>
-            </Html>
-        );
-    }
-
-
     return (
-        <Canvas dpr={[1, 2]} camera={{ fov: 50, position: [0, 0, 3.1] }}>
+        <Canvas dpr={[1, 2]}>
             
             {/* PASO 1: Reemplazamos <Stage> por luces manuales
               Esto nos da control total.
@@ -154,25 +288,24 @@ export default function Canvas3D({ productType, ...props}) {
             */}
             <Environment preset="city" />
 
-            <Suspense fallback={<Loader />}>
-                {/* PASO 3: Envolvemos tu producto en <Center>
-                  para asegurarnos de que quede en medio de la escena,
-                  algo que <Stage> también hacía automáticamente.
-                // position={[X, Y, Z]}
-                // X = mueve izquierda/derecha
-                // Y = mueve arriba/abajo
-                // Z = mueve adelante/atrás
-                */}
-                
-                <Center position={[0.4, 0.3, 0]}>
-                   {renderProduct()}
-                </Center>
+            <Suspense fallback={null}>
+                {renderProduct()}
             </Suspense>
 
             {/* Los controles de órbita quedan igual */}
-            <OrbitControls makeDefault autoRotate={true} minPolarAngle={0} maxPolarAngle={Math.PI / 1.5} />
+            <OrbitControls
+                ref={controlsRef}
+                makeDefault
+                onStart={() => setIsAutoRotate(false)}
+                autoRotate={isAutoRotate} // <-- Esto ahora obedece al 100% al useEffect
+                autoRotateSpeed={1.0}
+                minPolarAngle={0}
+                maxPolarAngle={Math.PI / 1.5}
+            />
+
         </Canvas>
     );
 }
 
 useGLTF.preload('/mochila_dior.glb');
+useGLTF.preload('/bolso.glb');

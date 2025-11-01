@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import EditorUI from '../components/EditorUI';
 import Canvas3D from '../components/Canvas3D';
 
-const initialState = {
+// Estado para la mochila
+const backpackInitialState = {
   productType: 'backpack',
   colors: {
     body: '#ffffff',
@@ -36,17 +37,59 @@ const initialState = {
   }
 };
 
+// Estado para el Bolso (el nuevo)
+const bagInitialState = {
+  productType: 'bag',
+  colors: {
+    // Usamos los nombres de mesh que me diste, pero en minúsculas
+    cuerpo: '#ffffff',
+    laterales: '#5A2020',
+    manija: '#5A2020',
+  },
+  texture: 'none',
+  customText: {
+    content: 'OEMN',
+    color: '#000000',
+    font: 'Formula1-Bold',
+    size: 1,
+    positionX: 0,
+    positionY: 0.46,
+    positionZ: 0.24,
+   },
+  customImage: {src: null, transform: { /*...*/ }}
+};
+
 function App() {
-  const [productType, setProductType] = useState(initialState.productType);
-  const [colors, setColors] = useState(initialState.colors);
-  const [texture, setTexture] = useState(initialState.texture);
-  const [customText, setCustomText] = useState(initialState.customText);
-  const [customImage, setCustomImage] = useState(initialState.customImage);
+  const [productType, setProductType] = useState(backpackInitialState.productType);
+  const [colors, setColors] = useState(backpackInitialState.colors);
+  const [texture, setTexture] = useState(backpackInitialState.texture);
+  const [customText, setCustomText] = useState(backpackInitialState.customText);
+  const [customImage, setCustomImage] = useState(backpackInitialState.customImage);
+
+  // --- AÑADE ESTA FUNCIÓN ---
+  const handleProductTypeChange = (newType) => {
+    setProductType(newType);
+
+    if (newType === 'backpack') {
+      setColors(backpackInitialState.colors);
+      setTexture(backpackInitialState.texture);
+      setCustomText(backpackInitialState.customText);
+      setCustomImage(backpackInitialState.customImage);
+    } else if (newType === 'bag') {
+      setColors(bagInitialState.colors);
+      setTexture(bagInitialState.texture);
+      setCustomText(bagInitialState.customText);
+      setCustomImage(bagInitialState.customImage);
+    }
+    // (Aquí puedes añadir 'else if (newType === 'mateBag')' en el futuro)
+  };
+  // --- FIN DE LA NUEVA FUNCIÓN ---
+
 
   const handleImageUpload = (dataUrl) => {
     // Si se quita la imagen (dataUrl es null)
     if (!dataUrl) {
-      setCustomImage(initialState.customImage);
+      setCustomImage(backpackInitialState.customImage);
     } else {
       // ¡ESTA ES LA CORRECCIÓN!
       // Cuando subimos una imagen, reseteamos su estado 'transform'
@@ -54,17 +97,17 @@ function App() {
       setCustomImage(prev => ({
         ...prev, // Mantenemos estado previo si lo hubiera
         src: dataUrl,
-        transform: initialState.customImage.transform // ¡Restauramos el transform!
+        transform: backpackInitialState.customImage.transform // ¡Restauramos el transform!
       }));
     }
   };
 
   const handleReset = useCallback(() => {
-    setProductType(initialState.productType);
-    setColors(initialState.colors);
-    setTexture(initialState.texture);
-    setCustomText(initialState.customText);
-    setCustomImage(initialState.customImage);
+    setProductType(backpackInitialState.productType);
+    setColors(backpackInitialState.colors);
+    setTexture(backpackInitialState.texture);
+    setCustomText(backpackInitialState.customText);
+    setCustomImage(backpackInitialState.customImage);
   }, []);
 
   const handleSave = async () => {
@@ -101,7 +144,7 @@ function App() {
     {/* Añadimos sombra y z-index para que "flote" */}
       <div className="shadow-2xl z-10">
         <EditorUI
-          productType={productType} setProductType={setProductType}
+          productType={productType} setProductType={handleProductTypeChange}
           colors={colors} setColors={setColors}
           texture={texture} setTexture={setTexture}
           customText={customText} setCustomText={setCustomText}
