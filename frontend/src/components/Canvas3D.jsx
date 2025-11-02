@@ -1,5 +1,5 @@
-import React, { useEffect, Suspense, useRef, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { useEffect, Suspense, useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Text, useTexture, Environment, Center, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -249,8 +249,27 @@ const Matebag = (props) => {
     );
 };
 
+// --- 3. AÑADIR ESTE COMPONENTE HELPER ---
+// Este componente vivirá dentro del Canvas y nos dará acceso al renderer
+const Screenshotter = forwardRef((props, ref) => {
+  const { gl } = useThree(); // Hook para acceder al renderer (gl)
+
+  // Expone la función 'takeScreenshot' al componente padre (DesignerPage)
+  useImperativeHandle(ref, () => ({
+    takeScreenshot: () => {
+      // gl.domElement es el <canvas>
+      // toDataURL() convierte el contenido del canvas a una imagen PNG en base64
+      return gl.domElement.toDataURL('image/png');
+    }
+  }));
+
+  return null; // No renderiza nada visible
+});
+
+
+
 // Componente principal Canvas3D
-function Canvas3D({ productType, ...props}) {
+function Canvas3D({ productType, screenshotRef, ...props}) {
     const controlsRef = useRef();
     const [isAutoRotate, setIsAutoRotate] = useState(true);
     
@@ -302,7 +321,7 @@ function Canvas3D({ productType, ...props}) {
                 return (
                     <>
                         <PerspectiveCamera makeDefault fov={50} position={[0, 0, 3.4]} />
-                        <Center key={JSON.stringify(props.materials)} position={[0.3, 0, 0]}>
+                        <Center key={JSON.stringify(props.materials)} position={[0.4, 0, 0]}>
                             <Matebag {...props} />
                         </Center>
                     </>
@@ -320,7 +339,7 @@ function Canvas3D({ productType, ...props}) {
     }
 
     return (
-        <Canvas dpr={[1, 2]}>
+        <Canvas dpr={[1, 2]} gl={{ preserveDrawingBuffer: true }} >
             <ambientLight intensity={0.5} />
             <directionalLight position={[5, 5, 5]} intensity={1} />
             <directionalLight position={[-5, -5, -5]} intensity={0.2} />
@@ -337,6 +356,8 @@ function Canvas3D({ productType, ...props}) {
                 minPolarAngle={0}
                 maxPolarAngle={Math.PI / 1.5}
             />
+            {/* --- 6. AÑADIR EL SCREENSHOTTER DENTRO DEL CANVAS --- */}
+            <Screenshotter ref={screenshotRef} />
         </Canvas>
     );
 }

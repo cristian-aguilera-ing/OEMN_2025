@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 // Rutas de importación corregidas
 import Canvas3D from '../components/Canvas3D';
 import EditorUI from '../components/EditorUI';
@@ -77,6 +77,9 @@ function App() {
   const [customText, setCustomText] = useState(backpackInitialState.customText);
   const [customImage, setCustomImage] = useState(backpackInitialState.customImage);
 
+  // Esta será la "conexión" con el componente Canvas3D
+  const canvasScreenshotRef = useRef();
+
   // --- HANDLERS (Sin cambios) ---
   const handleProductTypeChange = (newType) => {
     setProductType(newType);
@@ -123,7 +126,33 @@ function App() {
     }
   }, [productType]);
 
+  // --- 3. FUNCIÓN 'handleSave' REEMPLAZADA POR COMPLETO ---
   const handleSave = async () => {
+    
+    // --- Lógica de Captura de Pantalla ---
+    if (canvasScreenshotRef.current) {
+      // Llama a la función expuesta por Canvas3D.jsx
+      const dataUrl = canvasScreenshotRef.current.takeScreenshot();
+
+      if (dataUrl) {
+        // 1. Crear un enlace <a> temporal
+        const link = document.createElement('a');
+        // 2. Asignar la imagen (en base64) como su destino
+        link.href = dataUrl;
+        // 3. Ponerle nombre al archivo a descargar
+        link.download = 'mi-diseno.png';
+        
+        // 4. Simular clic para abrir el diálogo "Guardar como..."
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        console.error("Error: No se pudo tomar la captura. El canvas puede estar en blanco.");
+      }
+    }
+    // --- Fin de la lógica de captura ---
+
+    // (Tu lógica original de guardado se mantiene)
     const designData = { productType, materials, customText, customImage };
     try {
       console.log('Guardando diseño:', designData);
@@ -172,6 +201,8 @@ function App() {
           materials={materials} 
           customText={customText}
           customImage={customImage}
+          // --- 4. PASADO EL REF AL COMPONENTE CANVAS3D ---
+          screenshotRef={canvasScreenshotRef}
         />
       </div>
     </div>
