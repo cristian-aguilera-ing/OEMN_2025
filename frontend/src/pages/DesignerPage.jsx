@@ -54,9 +54,9 @@ const bagInitialState = {
 const matebagInitialState = {
   productType: 'matebag',
   materials: {
-    relleno: { type: 'color', value: '#ffffff' },
-    estructura: { type: 'color', value: '#000000' },
-    asas: { type: 'color', value: '#000000' },
+    relleno: { type: 'color', value: '#7d7d7b' },
+    estructura: { type: 'color', value: '#ffffff' },
+    asas: { type: 'color', value: '#ffffff' },
   },
   customText: {
     content: 'OEMN',

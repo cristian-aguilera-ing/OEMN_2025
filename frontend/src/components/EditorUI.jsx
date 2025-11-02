@@ -42,22 +42,38 @@ const MaterialAccordionItem = ({ children, title, partName, isOpen, onClick }) =
 
 
 // --- Editor de Material - Estilo Dark Glass ---
-const MaterialEditor = ({ partName, label, config, onConfigChange, textureOptions, canvasVariants, leatherVariants, geometricVariants }) => {
+// --- ↓↓↓ CORRECCIÓN #1 AQUÍ ↓↓↓ ---
+const MaterialEditor = ({ partName, label, config, onConfigChange, textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }) => {
   
-  // Handlers (sin cambios)
+  // Handlers
   const setType = (type) => {
     const defaultValue = type === 'color' ? (config.value.startsWith('#') ? config.value : '#ffffff') : 'none';
     onConfigChange(partName, { type, value: defaultValue });
   };
   const setValue = (value) => { onConfigChange(partName, { value }); };
   const setTexture = (id) => { onConfigChange(partName, { type: 'texture', value: id }); };
+
+  // --- ↓↓↓ CORRECCIÓN #2 AQUÍ ↓↓↓ ---
   const handleTextureCategory = (id) => {
     if (id === 'none') return setTexture('none');
+    
+    // Lógica para asignar una variante por defecto al hacer clic en una categoría nueva
     if (id === 'leather' && !config.value?.startsWith('leather-')) return setTexture('leather-brown');
     if (id === 'geometric' && !config.value?.startsWith('geometric-')) return setTexture('geometric-v1');
     if (id === 'canvas' && !config.value?.startsWith('canvas-')) return setTexture('canvas-v1');
-    if (id === 'leather' || id === 'geometric' || id === 'canvas') { } else { setTexture(id); }
+    
+    // ¡AQUÍ ESTÁ LA LÍNEA QUE FALTABA!
+    if (id === 'metal' && !config.value?.startsWith('metal-')) return setTexture('metal-azul-cepillado');
+
+    // Lógica para evitar que 'setTexture(id)' se llame con un ID de categoría
+    if (id === 'leather' || id === 'geometric' || id === 'canvas' || id === 'metal') { // <-- Añadido 'metal'
+      // No hacer nada si ya estamos en una sub-variante o acabamos de setear la default
+    } else {
+      setTexture(id); // Esto solo se ejecutará para IDs que no sean categorías (ej: 'none')
+    }
   };
+  // --- ↑↑↑ FIN DE LA CORRECCIÓN #2 ↑↑↑ ---
+
   const isTextureSelected = (opt) => {
     if (!config || config.type !== 'texture') return false;
     return config.value === opt.id || config.value?.startsWith(opt.id + '-');
@@ -150,6 +166,19 @@ const MaterialEditor = ({ partName, label, config, onConfigChange, textureOption
               </div>
             </div>
           )}
+          {/* --- BLOQUE 'METAL' QUE FALTABA RENDERIZAR --- */}
+          {config.value?.startsWith('metal-') && (
+            <div className="p-3 bg-black/20 rounded-md">
+              <h4 className="text-xs font-semibold mb-2 text-slate-400">Variantes de Metal:</h4>
+              <div className="flex flex-wrap gap-2">
+                {metalVariants.map(variant => (
+                  <button key={variant.id} onClick={() => setTexture(variant.id)} className={`px-2.5 py-1 text-xs rounded-full font-medium transition-colors ${config.value === variant.id ? 'bg-sky-500 text-white' : 'bg-slate-600/5SO text-slate-300 border border-white/10 hover:bg-slate-500/50'}`}>
+                    {variant.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -185,15 +214,29 @@ function EditorUI({
     setOpenMaterial(prev => (prev === partName ? null : partName));
   };
 
-  // --- Opciones (sin cambios) ---
+  // --- Opciones (con 'metal' añadido) ---
   const productOptions = ['backpack', 'bag', 'matebag'];
   const textureOptions = [
     { id: 'none', name: 'Liso' }, { id: 'canvas', name: 'Tela' },
     { id: 'leather', name: 'Cuero' }, { id: 'geometric', name: 'Tela Geométrica' },
+    { id: 'metal', name: 'Metal' }, // <-- OK
   ];
-  const canvasVariants = [ { id: 'canvas-v1', name: 'V1' }, { id: 'canvas-v2', name: 'V2' }, { id: 'canvas-v3', name: 'V3' }, { id: 'canvas-v4', name: 'V4' } ];
-  const leatherVariants = [ { id: 'leather-brown', name: 'Marrón' }, { id: 'leather-black', name: 'Negro' }, { id: 'leather-white', name: 'Blanco' } ];
+  const canvasVariants = [ 
+    { id: 'canvas-v1', name: 'V1' }, 
+    { id: 'canvas-v2', name: 'V2' }, 
+    { id: 'canvas-v3', name: 'V3' }, 
+    { id: 'canvas-v4', name: 'V4' }, 
+    { id: 'canvas-v5', name: 'V5' },
+    { id: 'canvas-v6', name: 'V6' },
+    { id: 'canvas-v7', name: 'V7' },
+    { id: 'canvas-v8', name: 'V8' },
+    { id: 'canvas-v9', name: 'V9' },
+    { id: 'canvas-v10', name: 'V10' },
+    { id: 'canvas-v11', name: 'V11' },
+    { id: 'canvas-v12', name: 'V12' } ];
+  const leatherVariants = [ { id: 'leather-brown', name: 'Marrón' }, { id: 'leather-vino', name: 'Vino' }, { id: 'leather-marron', name: 'Marrón Claro' }, { id: 'leather-black', name: 'Negro' }, { id: 'leather-crema', name: 'Crema' } ];
   const geometricVariants = [ { id: 'geometric-v1', name: 'V1' }, { id: 'geometric-v2', name: 'V2' }, { id: 'geometric-v3', name: 'V3' } ];
+  const metalVariants = [ { id: 'metal-azul-cepillado', name: 'Azul Cepillado' } ]; // <-- OK
   const fontOptions = [ 'Ailerons', 'Aqua', 'CraftyHoliday', 'Formula1-Bold', 'Formula1-Italic', 'Hyped', 'Jellee-Roman', 'koliko-Bold', 'koliko-Light', 'koliko-Regular', 'Lombok-Regular', 'Lottebytes', 'Love', 'Modeka', 'Neutro-ExtraBold', 'Neutro-Outline', 'Nordic-Alternative-egular', 'parley-bold', 'parley-regular'];
 
   // --- Handlers (sin cambios) ---
@@ -231,8 +274,7 @@ function EditorUI({
   };
 
   return (
-    // --- ÚNICO CAMBIO REALIZADO AQUÍ ---
-    // Se reemplazó "w-full max-w-[480px]" por "w-[480px]" para un ancho fijo.
+    // Ancho fijo de 360px
     <div className="w-[360px] h-full bg-[rgba(20,20,30,0.7)] backdrop-blur-xl shadow-2xl flex flex-col rounded-r-lg border-r border-white/10 text-slate-200">
       
       {/* Cabecera (Dark) */}
@@ -287,45 +329,45 @@ function EditorUI({
             {productType === 'backpack' && (
               <>
                 <MaterialAccordionItem title="Cuerpo Principal" partName="body" isOpen={openMaterial === 'body'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="body" label="" config={materials.body} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="body" label="" config={materials.body} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Correas de carga" partName="loadStraps" isOpen={openMaterial === 'loadStraps'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="loadStraps" label="" config={materials.loadStraps} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="loadStraps" label="" config={materials.loadStraps} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Correas de ajuste" partName="adjustmentStraps" isOpen={openMaterial === 'adjustmentStraps'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="adjustmentStraps" label="" config={materials.adjustmentStraps} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="adjustmentStraps" label="" config={materials.adjustmentStraps} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Bolsillos Laterales" partName="sidePockets" isOpen={openMaterial === 'sidePockets'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="sidePockets" label="" config={materials.sidePockets} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="sidePockets" label="" config={materials.sidePockets} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Bolsillo delantero" partName="frontPocket" isOpen={openMaterial === 'frontPocket'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="frontPocket" label="" config={materials.frontPocket} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="frontPocket" label="" config={materials.frontPocket} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
               </>
             )}
             {productType === 'bag' && (
               <>
                 <MaterialAccordionItem title="Cuerpo" partName="frenteMaterial" isOpen={openMaterial === 'frenteMaterial'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="frenteMaterial" label="" config={materials.frenteMaterial} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="frenteMaterial" label="" config={materials.frenteMaterial} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Laterales" partName="lateralMaterial" isOpen={openMaterial === 'lateralMaterial'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="lateralMaterial" label="" config={materials.lateralMaterial} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="lateralMaterial" label="" config={materials.lateralMaterial} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Manija y Tiras" partName="handle" isOpen={openMaterial === 'handle'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="handle" label="" config={materials.handle} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="handle" label="" config={materials.handle} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
               </>
             )}
             {productType === 'matebag' && (
               <>
                 <MaterialAccordionItem title="Cuerpo" partName="relleno" isOpen={openMaterial === 'relleno'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="relleno" label="" config={materials.relleno} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="relleno" label="" config={materials.relleno} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Estructura" partName="estructura" isOpen={openMaterial === 'estructura'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="estructura" label="" config={materials.estructura} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="estructura" label="" config={materials.estructura} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
                 <MaterialAccordionItem title="Manija y Tiras" partName="asas" isOpen={openMaterial === 'asas'} onClick={handleMaterialClick}>
-                  <MaterialEditor partName="asas" label="" config={materials.asas} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants }} />
+                  <MaterialEditor partName="asas" label="" config={materials.asas} onConfigChange={handleMaterialChange} {...{ textureOptions, canvasVariants, leatherVariants, geometricVariants, metalVariants }} />
                 </MaterialAccordionItem>
               </>
             )}

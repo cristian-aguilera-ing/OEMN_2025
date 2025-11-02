@@ -3,16 +3,49 @@ import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Text, useTexture, Environment, Center, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
-// --- INICIO: Contenido de Canvas3D.jsx ---
-
 // URLs de las fuentes
 const fontUrls = { 'Ailerons': '/fonts/Ailerons.woff', 'Aqua': '/fonts/Aqua.woff', 'CraftyHoliday': '/fonts/CraftyHoliday.woff', 'Formula1-Bold': '/fonts/Formula1-Bold.woff', 'Formula1-Italic': '/fonts/Formula1-Italic.woff', 'Hyped': '/fonts/Hyped.woff', 'Jellee-Roman': '/fonts/Jellee-Roman.woff', 'koliko-Bold': '/fonts/koliko-Bold.woff', 'koliko-Light': '/fonts/koliko-Light.woff', 'koliko-Regular': '/fonts/koliko-Regular.woff', 'Lombok-Regular': '/fonts/Lombok-Regular.woff', 'Lottebytes': '/fonts/Lottebytes.woff', 'Love': '/fonts/Love.woff', 'Modeka': '/fonts/Modeka.woff', 'Neutro-ExtraBold': '/fonts/Neutro-ExtraBold.woff', 'Neutro-Outline': '/fonts/Neutro-Outline.woff', 'Nordic-Alternative-regular': '/fonts/Nordic-Alternative-regular.woff', 'parley-bold': '/fonts/parley-bold.woff', 'parley-regular': '/fonts/parley-regular.woff'};
 
-// Componente para materiales PBR
-const PbrMaterial = ({ path }) => {
-    const pbrTextures = useTexture({ map: `${path}/color.jpg`, normalMap: `${path}/normal.jpg`, roughnessMap: `${path}/roughness.jpg` });
-    useEffect(() => { Object.values(pbrTextures).forEach(tex => { if (tex) { tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(3, 3); tex.flipY = false; tex.needsUpdate = true; } }); }, [pbrTextures]);
-    return <meshStandardMaterial {...pbrTextures} roughness={1.0} metalness={0.0} />;
+// Componente para materiales PBR (¡Actualizado!)
+// Componente para materiales PBR (¡Corregido!)
+const PbrMaterial = ({ path, metalness = 0.0, roughness = 1.0 }) => {
+    
+    // 1. Define los mapas base que TODOS tienen
+    const mapsToLoad = {
+        map: `${path}/color.jpg`,
+        normalMap: `${path}/normal.jpg`,
+        roughnessMap: `${path}/roughness.jpg`,
+    };
+
+    // 2. AÑADE los mapas metálicos SÓLO si metalness es 1.0
+    //    (El 'metalness' lo pasamos desde ConfigurableMaterial)
+    if (metalness === 1.0) {
+        mapsToLoad.metalnessMap = `${path}/metallic.jpg`;
+        mapsToLoad.displacementMap = `${path}/height.jpg`;
+    }
+
+    // 3. Carga solo los mapas necesarios
+    const pbrTextures = useTexture(mapsToLoad);
+
+    useEffect(() => {
+        Object.values(pbrTextures).forEach(tex => {
+            if (tex) {
+                tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+                tex.repeat.set(3, 3);
+                tex.flipY = false;
+                tex.needsUpdate = true;
+            }
+        });
+    }, [pbrTextures, path]); // Añadido 'path' a las dependencias
+
+    // Aplicamos los valores base y los mapas
+    return <meshStandardMaterial 
+              {...pbrTextures} 
+              roughness={roughness} // Valor base de rugosidad
+              metalness={metalness}   // Valor base de metal
+              // Aplica la escala de desplazamiento solo si el mapa existe
+              displacementScale={pbrTextures.displacementMap ? 0.01 : 0}
+           />;
 };
 
 // Componente de imagen personalizada
@@ -38,16 +71,27 @@ const CustomImageMaterial = ({ src, transform }) => {
 // basado en el objeto 'config' que recibe.
 const ConfigurableMaterial = ({ config }) => {
     if (config?.type === 'color') {
-        // Si es tipo 'color', usa el valor como color
         return <meshStandardMaterial color={config.value} roughness={0.8} metalness={0.1} />;
     }
     
     if (config?.type === 'texture') {
-        // Si es tipo 'textura', usa la lógica anterior
-        const [category, variant] = (config.value || 'none').split('-');
-        if (category === 'leather') return <PbrMaterial path={`/textures/leather/${variant}`} />;
-        if (category === 'canvas') return <PbrMaterial path={`/textures/canvas/${variant || 'v1'}`} />;
-        if (category === 'geometric') return <PbrMaterial path={`/textures/geometric/${variant || 'v1'}`} />;
+        // --- ¡ESTA ES LA CORRECCIÓN! ---
+        // Divide el string en todas sus partes
+        const parts = (config.value || 'none').split('-');
+        // La categoría es solo la primera parte
+        const category = parts[0];
+        // La variante es TODO el resto, unido de nuevo por guiones
+        const variant = parts.slice(1).join('-');
+        // --- FIN DE LA CORRECCIÓN ---
+
+        // Ahora 'variant' será "azul-cepillado" (correcto)
+        // o "brown" (correcto) o "v1" (correcto)
+        
+        if (category === 'leather') return <PbrMaterial path={`/textures/leather/${variant}`} metalness={0.0} />;
+        if (category === 'canvas') return <PbrMaterial path={`/textures/canvas/${variant || 'v1'}`} metalness={0.0} />;
+        if (category === 'geometric') return <PbrMaterial path={`/textures/geometric/${variant || 'v1'}`} metalness={0.0} />;
+        if (category === 'metal') return <PbrMaterial path={`/textures/metal/${variant}`} metalness={1.0} />; // <-- Ahora usará "azul-cepillado"
+
         // Fallback si la textura es 'none' o inválida
         return <meshStandardMaterial color="#ffffff" roughness={0.8} metalness={0.1} />;
     }
@@ -301,7 +345,5 @@ function Canvas3D({ productType, ...props}) {
 useGLTF.preload('/mochila_dior.glb');
 useGLTF.preload('/bolso.glb');
 useGLTF.preload('/bolso_matero.glb');
-
-// --- FIN: Contenido de Canvas3D.jsx ---
 
 export default Canvas3D;
