@@ -1,24 +1,28 @@
-import React, { useState } from 'react'; // <-- 'useState' ya estaba
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- 1. IMPORTA LOS NUEVOS COMPONENTES ---
+// Importa los componentes de modal
 import { Modal } from './Modal';
 import { LoginForm } from './LoginForm';
 import { CartView } from './CartView';
 
 export const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false); // Tu estado del menú móvil
+  const [isOpen, setIsOpen] = useState(false); // Estado del menú móvil
   
-  // --- 2. AÑADE LOS ESTADOS PARA LOS MODALES ---
+  // Estados para los modales
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
+  // Añadido el enlace a la sección de beneficios
   const navItems = [
     { name: 'Nosotros', path: '/#nosotros' },
     { name: 'Personaliza', path: '/#personaliza' },
+    { name: 'Beneficios', path: '/#comunidad' }, // <-- NUEVA LÍNEA AÑADIDA
     { name: 'Contáctanos', path: '/#contactanos' },
   ];
+  // --- FIN DEL CAMBIO ---
 
   return (
     <>
@@ -41,7 +45,7 @@ export const Navbar = () => {
               </Link>
             </div>
             
-            {/* --- Links de Escritorio (Sin cambios) --- */}
+            {/* --- Links de Escritorio (Se actualiza solo) --- */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
                 {navItems.map((item) => (
@@ -56,9 +60,8 @@ export const Navbar = () => {
               </div>
             </div>
 
-            {/* --- 3. BOTONES DE ESCRITORIO (Nuevos) --- */}
+            {/* --- Botones de Escritorio (Login/Carrito) --- */}
             <div className="hidden md:flex items-center space-x-2 ml-4">
-              {/* Botón de Login (Icono de Usuario) */}
               <button
                 onClick={() => setIsLoginOpen(true)}
                 className="p-2 rounded-full text-gray-300 hover:text-white transition-colors"
@@ -69,7 +72,6 @@ export const Navbar = () => {
                 </svg>
               </button>
               
-              {/* Botón de Carrito (Icono de Carrito) */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="p-2 rounded-full text-gray-300 hover:text-white transition-colors"
@@ -94,7 +96,7 @@ export const Navbar = () => {
         </div>
       </motion.nav>
 
-      {/* --- Menú móvil --- */}
+      {/* --- Menú móvil (Se actualiza solo) --- */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -116,14 +118,14 @@ export const Navbar = () => {
                 </a>
               ))}
               
-              {/* --- 4. BOTONES DE MÓVIL (Nuevos) --- */}
+              {/* Botones de móvil (Login/Carrito) */}
               <div className="pt-2 mt-2 border-t border-gray-700">
                 <a
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setIsOpen(false); // Cierra el menú móvil
-                    setIsLoginOpen(true); // Abre el modal
+                    setIsOpen(false);
+                    setIsLoginOpen(true);
                   }}
                   className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
                 >
@@ -133,8 +135,9 @@ export const Navbar = () => {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setIsOpen(false); // Cierra el menú móvil
-                    setIsCartOpen(true); // Abre el modal
+                    setIsOpen(false);
+Ciòe
+                    setIsCartOpen(true);
                   }}
                   className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
                 >
@@ -146,8 +149,7 @@ export const Navbar = () => {
         )}
       </AnimatePresence>
       
-      {/* --- 5. RENDERIZA LOS MODALES (Fuera del <nav>) --- */}
-      {/* Se renderizarán aquí pero flotarán sobre todo lo demás */}
+      {/* --- Modales (Sin cambios) --- */}
       <Modal 
         isOpen={isLoginOpen} 
         onClose={() => setIsLoginOpen(false)} 

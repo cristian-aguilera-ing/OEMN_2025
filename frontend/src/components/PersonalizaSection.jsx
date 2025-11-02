@@ -6,19 +6,19 @@ const products = [
   {
     name: 'Mochila',
     path: 'backpack',
-    img: 'https://i.pinimg.com/736x/1b/4c/34/1b4c34001c06f1dd970097e758bc0ad3.jpg',
+    img: '/img/mi-diseno-mochila.png',
     desc: 'Materiales: Jean, nylon, poliéster',
   },
   {
     name: 'Bolso',
     path: 'bag',
-    img: 'https://cdn.birdinbag.com/cdn/c/SH/23-12-25/th-21L60D64RBC/Black.webp',
+    img: '/img/mi-diseno-bolso.png',
     desc: 'Materiales: Lona, cuero sintético, poliester.',
   },
   {
     name: 'Bolso para Mate',
     path: 'mate',
-    img: 'https://i.pinimg.com/1200x/d8/f8/b1/d8f8b1f23f71a9fc4e690248830aa2e6.jpg',
+    img: '/img/mi-diseno-mate.png',
     desc: 'Material interno impermeable.',
   },
 ];

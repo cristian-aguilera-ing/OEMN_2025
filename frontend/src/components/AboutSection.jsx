@@ -1,4 +1,4 @@
-import React from 'react'; // <-- ¡AÑADE ESTA LÍNEA!
+import React from 'react';
 import { motion } from 'framer-motion';
 
 const staggerContainer = {
@@ -17,9 +17,10 @@ const fadeInY = {
 };
 
 const designs = [
-  { name: 'Girly back🌸', img: 'https://i.pinimg.com/736x/4f/62/f6/4f62f66e63851259dee6116f10d1bfdb.jpg' },
-  { name: 'Casual🎮', img: 'https://i.pinimg.com/1200x/fb/c9/9e/fbc99e160718e5d0d127351a75fda8b2.jpg' },
-  { name: 'Woman Bag', img: 'https://i.pinimg.com/736x/f6/fd/17/f6fd17c2665140fa863105a8dad57936.jpg' },
+  { name: 'Franco Colapinto', img: '/img/mi-diseno2.png' },
+  { name: 'Valentina', img: '/img/mi-diseno3.png' },
+  { name: 'Matero', img: '/img/mi-diseno4.png' },
+  { name: 'Mochila Mujer', img: '/img/mi-diseno1.png' },
 ];
 
 export const AboutSection = () => {
@@ -36,12 +37,15 @@ export const AboutSection = () => {
       <motion.p variants={fadeInY} className="text-xl text-gray-500 mt-2 mb-8 italic">
         Mochilas y bolsos personalizados
       </motion.p>
+      
+      {/* --- TEXTO REESCRITO CON TU "POR QUÉ"  --- */}
       <motion.p variants={fadeInY} className="text-lg text-gray-700 text-justify mb-4">
-        En NÜArt creemos que cada persona tiene una historia para contar...
+        En NÜArt creemos que cada persona tiene una historia que contar y una forma única de expresarse. No vendemos solo bolsos; ofrecemos un lienzo para tu identidad. Nuestra misión es transformar objetos cotidianos en una extensión de tu esencia, permitiendo que lleves tu autenticidad en cada detalle.
       </motion.p>
       <motion.p variants={fadeInY} className="text-lg text-gray-700 text-justify mb-12">
-        Nuestra visión es ser la marca argentina líder...
+        Buscamos inspirar creatividad y conciencia ambiental, demostrando que la moda puede ser personal, innovadora y sostenible. Combinamos diseño de calidad, producción local y una experiencia digital única para que tu estilo cobre vida.
       </motion.p>
+      {/* --- FIN DEL TEXTO REESCRITO --- */}
 
       <motion.h3 variants={fadeInY} className="text-2xl font-semibold mb-6">
         Algunos diseños creados por nuestro equipo:
