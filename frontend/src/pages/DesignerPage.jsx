@@ -36,8 +36,8 @@ const bagInitialState = {
   productType: 'bag',
   materials: {
     frenteMaterial: { type: 'color', value: '#ffffff' },
-    lateralMaterial: { type: 'color', value: '#5A2020' },
-    handle: { type: 'color', value: '#5A2020' },
+    lateralMaterial: { type: 'color', value: '#ffffff' },
+    handle: { type: 'color', value: '#ffffff' },
   },
   customText: {
     content: 'OEMN',
@@ -54,7 +54,7 @@ const bagInitialState = {
 const matebagInitialState = {
   productType: 'matebag',
   materials: {
-    relleno: { type: 'color', value: '#7d7d7b' },
+    relleno: { type: 'color', value: '#ffffff' },
     estructura: { type: 'color', value: '#ffffff' },
     asas: { type: 'color', value: '#ffffff' },
   },

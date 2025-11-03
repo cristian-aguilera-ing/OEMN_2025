@@ -1,5 +1,6 @@
 import React from 'react'; // <-- ¡AÑADE ESTA LÍNEA!
-import { Link } from 'react-router-dom'; // ¡Este Link es clave!
+{/*import { Link } from 'react-router-dom'; */}
+import { MagicButton } from './MagicButton'; // <-- 1. IMPORTA TU NUEVO BOTÓN
 import { motion } from 'framer-motion';
 
 const products = [
@@ -76,12 +77,9 @@ export const PersonalizaSection = () => {
                   Esto te llevará a /designer, que cargará tu app.
                   (El path: 'backpack' no lo usamos aún, pero es buena idea) 
                 */}
-                <Link
-                  to="/designer" 
-                  className="block w-full mt-4 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors duration-300"
-                >
+                <MagicButton to="/designer">
                   Diseña aquí
-                </Link>
+                </MagicButton>
               </div>
             </motion.div>
           ))}

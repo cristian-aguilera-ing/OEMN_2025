@@ -3,3 +3,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ... (Tu código existente de @tailwind) ... */
+
+/* ==================================== */
+/* MAGIC BUTTON v1 (El que sigue al puntero) */
+/* ==================================== */
+
+.magic-button {
+  /* 1. Define las variables (del :root de tu imagen) */
+  --size: 250px; /* Tamaño del brillo */
+  --hue: 240;    /* Púrpura/Azul (puedes cambiarlo) */
+  --glow: hsl(var(--hue) 80% 70%);
+  --text-glow: hsl(var(--hue) 80% 85%);
+  --bg: hsl(210 10% 10%); /* Fondo oscuro del botón */
+
+  /* 2. Estilos del botón (de tu imagen 2) */
+  color: white; /* Color de fallback */
+  border-radius: 0.5rem; /* rounded-lg */
+  border: 2px solid transparent; /* Grosor del borde */
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-align: center;
+  position: relative;
+  overflow: hidden; /* ¡Importante! */
+  
+  /* 3. El truco del borde brillante */
+  background: var(--bg); /* Fallback */
+  background-image: 
+    linear-gradient(var(--bg), var(--bg)),
+    linear-gradient(var(--glow), var(--glow));
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  
+  /* 4. Sombra interna */
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.1) inset;
+  
+  transition: all 0.2s ease;
+}
+
+/* 5. El <span> para el texto brillante (de tu imagen 2) */
+.magic-button span {
+  position: relative;
+  z-index: 2;
+  
+  /* El truco del texto brillante */
+  background: linear-gradient(var(--text-glow), var(--text-glow));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  transition: all 0.2s ease;
+}
+
+/* 6. Brillo del puntero (lógica de imagen 1, estilos de imagen 2) */
+.magic-button::after {
+  content: "";
+  position: absolute;
+  /* ¡Posición controlada por tu JS local (--x, --y)! */
+  left: var(--x, 50%); /* 50% es el valor por defecto */
+  top: var(--y, 50%);
+  width: var(--size);
+  height: var(--size);
+  
+  /* El gradiente que sigue al puntero (de tu imagen 1) */
+  background-image: radial-gradient(hsl(var(--hue) 80% 85%), transparent 60%);
+  
+  filter: blur(20px);
+  transform: translate(-50%, -50%); /* Centra el brillo en el puntero */
+  z-index: -1;
+  pointer-events: none; /* No bloquear clics */
+  opacity: 0; /* Oculto por defecto */
+  transition: opacity 0.3s;
+}
+
+/* 7. Muestra el brillo al hacer hover */
+.magic-button:hover::after {
+  opacity: 0.6;
+}
+
+/* 8. Efecto de escala */
+.magic-button:hover {
+  transform: scale(1.05);
+}
+.magic-button:active {
+  transform: scale(0.98);
+}
