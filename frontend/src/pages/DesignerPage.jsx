@@ -195,7 +195,7 @@ function App() {
       </div>
 
       {/* 2. El Canvas ocupa el 100% del espacio del contenedor 'relative' */}
-      <div className="absolute top-0 right-0 bottom-0 left-[360px] h-full">
+      <div className="absolute top-0 right-0 bottom-0 left-[360px] h-full bg-gray-300">
         <Canvas3D
           productType={productType}
           materials={materials} 

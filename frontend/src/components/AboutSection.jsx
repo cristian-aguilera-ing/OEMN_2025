@@ -23,7 +23,7 @@ const designs = [
   { name: 'Flor de Ciruelo', img: '/img/mi-diseno1.png' },
   { name: 'Todo Cuero', img: '/img/mi-diseno5.png' },
   { name: 'Jean y Textura Gris', img: '/img/mi-diseno9.png' },
-  { name: 'Jean reforzado', img: '/img/mi-diseno7.png' },
+  { name: 'Jean', img: '/img/fondo1.png' },
   { name: 'Jean y Mariposas', img: '/img/mi-diseno6.png' },
   { name: 'Todo Rosa', img: '/img/mi-diseno8.png' },
   
