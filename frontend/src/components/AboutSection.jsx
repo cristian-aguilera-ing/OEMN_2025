@@ -46,15 +46,17 @@ export const AboutSection = () => {
       
       {/* --- TEXTO REESCRITO CON TU "POR QUÉ"  --- */}
       <motion.p variants={fadeInY} className="text-lg text-gray-700 text-justify mb-4">
-        En NÜArt creemos que cada persona tiene una historia que contar y una forma única de expresarse. No vendemos solo bolsos; ofrecemos un lienzo para tu identidad. Nuestra misión es transformar objetos cotidianos en una extensión de tu esencia, permitiendo que lleves tu autenticidad en cada detalle.
+          <strong>¡Diseñá, creá y destacá con NÜArt!</strong> <br/>
+          Tu estilo no se copia, se diseña. En NÜArt transformamos mochilas y bolsos en piezas únicas hechas a tu medida. Elegí colores, texturas y detalles que hablen de vos.
       </motion.p>
       <motion.p variants={fadeInY} className="text-lg text-gray-700 text-justify mb-12">
-        Buscamos inspirar creatividad y conciencia ambiental, demostrando que la moda puede ser personal, innovadora y sostenible. Combinamos diseño de calidad, producción local y una experiencia digital única para que tu estilo cobre vida.
+        Hecho con pasión local y conciencia ambiental, cada pieza es una mezcla perfecta de diseño, innovación y sostenibilidad.<br></br>
+        <strong>Mostrá quién sos. Cargá tu mundo con identidad.</strong>
       </motion.p>
       {/* --- FIN DEL TEXTO REESCRITO --- */}
 
       <motion.h3 variants={fadeInY} className="text-2xl font-semibold mb-6">
-        Algunos diseños creados por nuestro equipo:
+        Algunos diseños creados por nuestros clientes:
       </motion.h3>
 
       <motion.div variants={staggerContainer} className="grid md:grid-cols-3 gap-8">
