@@ -23,9 +23,10 @@ const designs = [
   { name: 'Flor de Ciruelo', img: '/img/mi-diseno1.png' },
   { name: 'Todo Cuero', img: '/img/mi-diseno5.png' },
   { name: 'Jean y Textura Gris', img: '/img/mi-diseno9.png' },
-  { name: 'Jean', img: '/img/fondo1.png' },
+  { name: 'Banda de Rock "Nunca Muere"', img: '/img/fondo1.png' },
   { name: 'Jean y Mariposas', img: '/img/mi-diseno6.png' },
-  { name: 'Todo Rosa', img: '/img/mi-diseno8.png' },
+  { name: 'Arg. Campeon del Mundo', img: '/img/mi-diseno8.png' },
+  { name: 'Boquita', img: '/img/boca.png' },
   
 ];
 
@@ -47,10 +48,15 @@ export const AboutSection = () => {
       {/* --- TEXTO REESCRITO CON TU "POR QUÉ"  --- */}
       <motion.p variants={fadeInY} className="text-lg text-gray-700 text-justify mb-4">
           <strong>¡Diseñá, creá y destacá con NÜArt!</strong> <br/>
-          Tu estilo no se copia, se diseña. En NÜArt transformamos mochilas y bolsos en piezas únicas hechas a tu medida. Elegí colores, texturas y detalles que hablen de vos.
+          Casi todos tenemos una mochila o un bolso. Pero, <strong>¿realmente nos representa?</strong><br></br> 
+          ¿O es solo un producto genérico igual al que tienen muchas personas?<br></br>
+          <br/>
+          No venimos a venderles mochilas. Venimos a ofrecerles un <strong>lienzo en el que pintar</strong>.
       </motion.p>
       <motion.p variants={fadeInY} className="text-lg text-gray-700 text-justify mb-12">
-        Hecho con pasión local y conciencia ambiental, cada pieza es una mezcla perfecta de diseño, innovación y sostenibilidad.<br></br>
+        "En NÜArt, creemos que cada persona tiene una historia que contar y que los objetos que usamos deberían ser 
+        una extensión de nuestra identidad. Nuestra misión es simple: <strong>Diseña tu Estilo, Crea tu Identidad</strong>. "
+        <br></br>
         <strong>Mostrá quién sos. Cargá tu mundo con identidad.</strong>
       </motion.p>
       {/* --- FIN DEL TEXTO REESCRITO --- */}
